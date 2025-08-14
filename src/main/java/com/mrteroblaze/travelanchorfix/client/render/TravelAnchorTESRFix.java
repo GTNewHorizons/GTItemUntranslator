@@ -7,11 +7,11 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MathHelper;
-import net.minecraft.util.MovingObjectPosition;
+
 import org.lwjgl.opengl.GL11;
 
-import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 import crazypants.enderio.config.Config;
+import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 
 public class TravelAnchorTESRFix extends TileEntitySpecialRenderer {
 
@@ -21,7 +21,8 @@ public class TravelAnchorTESRFix extends TileEntitySpecialRenderer {
 
         TileTravelAnchor anchor = (TileTravelAnchor) te;
         String name = anchor.getLabel();
-        if (name == null || name.trim().isEmpty()) return;
+        if (name == null || name.trim()
+            .isEmpty()) return;
 
         Minecraft mc = Minecraft.getMinecraft();
         EntityPlayer player = mc.thePlayer;
@@ -32,7 +33,7 @@ public class TravelAnchorTESRFix extends TileEntitySpecialRenderer {
         if (distSq > maxDist * maxDist) return;
 
         // Показываем ТОЛЬКО если игрок явно «в режиме путешествия»:
-        //  - стоит на якоре ИЛИ держит Staff of Traveling ИЛИ крадётся (Shift)
+        // - стоит на якоре ИЛИ держит Staff of Traveling ИЛИ крадётся (Shift)
         if (!(isStandingOnAnyAnchor(player) || isHoldingTravelStaff(player) || player.isSneaking())) {
             return;
         }
@@ -84,12 +85,20 @@ public class TravelAnchorTESRFix extends TileEntitySpecialRenderer {
         if (player == null || player.getHeldItem() == null) return false;
         try {
             // 1) По имени класса предмета (надёжно для EIO)
-            String cls = player.getHeldItem().getItem().getClass().getName().toLowerCase();
+            String cls = player.getHeldItem()
+                .getItem()
+                .getClass()
+                .getName()
+                .toLowerCase();
             if (cls.contains("travel") && cls.contains("staff")) return true;
 
             // 2) По unlocalized имени (fallback)
-            String unloc = player.getHeldItem().getUnlocalizedName();
-            return unloc != null && unloc.toLowerCase().contains("travel") && unloc.toLowerCase().contains("staff");
+            String unloc = player.getHeldItem()
+                .getUnlocalizedName();
+            return unloc != null && unloc.toLowerCase()
+                .contains("travel")
+                && unloc.toLowerCase()
+                    .contains("staff");
         } catch (Throwable t) {
             return false;
         }
