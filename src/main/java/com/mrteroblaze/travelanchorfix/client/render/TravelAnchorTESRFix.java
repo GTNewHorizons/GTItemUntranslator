@@ -6,9 +6,11 @@ import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MovingObjectPosition;
+
 import org.lwjgl.opengl.GL11;
-import crazypants.enderio.teleport.anchor.TileTravelAnchor;
+
 import crazypants.enderio.config.Config;
+import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 
 public class TravelAnchorTESRFix extends TileEntitySpecialRenderer {
 
@@ -18,7 +20,8 @@ public class TravelAnchorTESRFix extends TileEntitySpecialRenderer {
 
         TileTravelAnchor anchor = (TileTravelAnchor) te;
         String name = anchor.getLabel();
-        if (name == null || name.trim().isEmpty()) return;
+        if (name == null || name.trim()
+            .isEmpty()) return;
 
         Minecraft mc = Minecraft.getMinecraft();
         double distSq = mc.thePlayer.getDistanceSq(te.xCoord + 0.5, te.yCoord + 0.5, te.zCoord + 0.5);
