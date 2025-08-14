@@ -35,4 +35,6 @@
  */
 dependencies {
     //runtimeOnlyNonPublishable("com.github.GTNewHorizons:NotEnoughItems:2.7.69-GTNH:dev")
+	compile files("libs/EnderIO-2.9.18-dev.jar")
+	compile files("libs/endercore-0.4.8-dev.jar")
 }
