@@ -28,13 +28,11 @@ public class TravelAnchorTESRFix extends TileEntitySpecialRenderer {
         EntityPlayer player = mc.thePlayer;
         double distSq = player.getDistanceSq(te.xCoord + 0.5, te.yCoord + 0.5, te.zCoord + 0.5);
 
-        // Читаем дистанцию из конфигов EnderIO
         int maxDist = crazypants.enderio.config.Config.travelAnchorMaxDistance;
         if (distSq > (maxDist * maxDist)) {
             return;
         }
 
-        // Проверяем, что якорь виден через блоки или игрок приседает
         if (!TravelController.instance.isTravelItemActive(player) && !player.isSneaking()) {
             return;
         }
