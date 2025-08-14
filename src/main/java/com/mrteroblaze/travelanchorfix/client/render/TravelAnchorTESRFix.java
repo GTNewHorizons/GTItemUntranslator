@@ -4,15 +4,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
 
 import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 import crazypants.enderio.config.Config;
-
-import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 
 public class TravelAnchorTESRFix extends TileEntitySpecialRenderer {
 
@@ -34,7 +32,8 @@ public class TravelAnchorTESRFix extends TileEntitySpecialRenderer {
     }
 
     private void renderLabel(String text, double x, double y, double z) {
-        FontRenderer fr = Minecraft.getMinecraft().fontRenderer;
+        Minecraft mc = Minecraft.getMinecraft();
+        FontRenderer fr = mc.fontRenderer;
         float scale = 0.016666668F * 1.6F;
 
         GL11.glPushMatrix();
@@ -52,7 +51,6 @@ public class TravelAnchorTESRFix extends TileEntitySpecialRenderer {
         Tessellator tess = Tessellator.instance;
         int width = fr.getStringWidth(text) / 2;
 
-        // Фон
         GL11.glDisable(GL11.GL_TEXTURE_2D);
         tess.startDrawingQuads();
         tess.setColorRGBA_F(0.0F, 0.0F, 0.0F, 0.25F);
@@ -63,7 +61,7 @@ public class TravelAnchorTESRFix extends TileEntitySpecialRenderer {
         tess.draw();
         GL11.glEnable(GL11.GL_TEXTURE_2D);
 
-        // Текст
+        mc.getTextureManager().bindTexture(net.minecraft.client.gui.FontRenderer.locationFontTexture);
         fr.drawString(text, -width, 0, 0xFFFFFFFF);
 
         GL11.glEnable(GL11.GL_DEPTH_TEST);

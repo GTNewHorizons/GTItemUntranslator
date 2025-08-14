@@ -1,0 +1,15 @@
+[
+  {
+    "modid": "travelanchorfix",
+    "name": "Travel Anchor Label Fix",
+    "description": "Fixes Travel Anchor name rendering under shader packs (Angelica enableFontRenderer=false).",
+    "version": "1.0.0",
+    "mcversion": "1.7.10",
+    "authorList": [
+      "mrteroblaze"
+    ],
+    "dependencies": [
+      "required-after:EnderIO"
+    ]
+  }
+]
