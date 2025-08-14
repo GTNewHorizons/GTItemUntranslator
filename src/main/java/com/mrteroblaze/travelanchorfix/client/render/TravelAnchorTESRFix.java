@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.util.MovingObjectPosition;
 
 import org.lwjgl.opengl.GL11;
 
@@ -31,8 +32,9 @@ public class TravelAnchorTESRFix extends TileEntitySpecialRenderer {
         double maxDistSq = Config.travelAnchorMaxDistance * Config.travelAnchorMaxDistance;
         if (distSq > maxDistSq) return;
 
-        // Отображаем только если игрок целится
-        if (!mc.objectMouseOver.getBlockPos().equals(te.getPos())) {
+        // Показываем только при наведении
+        MovingObjectPosition mop = mc.objectMouseOver;
+        if (mop == null || mop.blockX != te.xCoord || mop.blockY != te.yCoord || mop.blockZ != te.zCoord) {
             return;
         }
 
@@ -53,7 +55,7 @@ public class TravelAnchorTESRFix extends TileEntitySpecialRenderer {
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
-        // Отрисовка фона
+        // Рамка (фон)
         FontRenderer fontrenderer = this.getFontRenderer();
         int stringWidth = fontrenderer.getStringWidth(name) / 2;
         Tessellator tessellator = Tessellator.instance;
@@ -67,7 +69,7 @@ public class TravelAnchorTESRFix extends TileEntitySpecialRenderer {
         tessellator.draw();
         GL11.glEnable(GL11.GL_TEXTURE_2D);
 
-        // Отрисовка текста
+        // Текст
         fontrenderer.drawString(EnumChatFormatting.WHITE + name, -stringWidth, 0, 0xFFFFFF);
 
         GL11.glEnable(GL11.GL_DEPTH_TEST);
