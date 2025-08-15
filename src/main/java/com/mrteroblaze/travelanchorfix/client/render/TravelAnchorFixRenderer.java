@@ -33,33 +33,43 @@ public class TravelAnchorFixRenderer extends TileEntitySpecialRenderer {
     private BatchingFontRenderer batched; // лениво инициализируемый рендерер из Angelica
 
     private BatchingFontRenderer ensureBatched() {
-        if (batched != null) return batched;
-        if (!Loader.isModLoaded("angelica")) return null;
-        try {
-            Minecraft mc = Minecraft.getMinecraft();
-            FontRenderer fr = mc.fontRenderer;
+    if (batched != null) return batched;
+    if (!Loader.isModLoaded("angelica")) return null;
+    try {
+        Minecraft mc = Minecraft.getMinecraft();
+        FontRenderer fr = mc.fontRenderer;
 
-            // рефлексия для 1.7.10
-            Field fGlyphWidth = FontRenderer.class.getDeclaredField("glyphWidth");
-            fGlyphWidth.setAccessible(true);
-            byte[] glyphWidth = (byte[]) fGlyphWidth.get(fr);
+        // glyphWidth
+        Field fGlyphWidth = FontRenderer.class.getDeclaredField("glyphWidth");
+        fGlyphWidth.setAccessible(true);
+        byte[] glyphWidth = (byte[]) fGlyphWidth.get(fr);
 
-            Field fCharWidth = FontRenderer.class.getDeclaredField("charWidth");
-            fCharWidth.setAccessible(true);
-            int[] charWidth = (int[]) fCharWidth.get(fr);
+        // charWidth
+        Field fCharWidth = FontRenderer.class.getDeclaredField("charWidth");
+        fCharWidth.setAccessible(true);
+        int[] charWidth = (int[]) fCharWidth.get(fr);
 
-            Field fLoc = FontRenderer.class.getDeclaredField("locationFontTexture");
-            fLoc.setAccessible(true);
-            ResourceLocation fontTex = (ResourceLocation) fLoc.get(fr);
+        // colorCode
+        Field fColorCode = FontRenderer.class.getDeclaredField("colorCode");
+        fColorCode.setAccessible(true);
+        int[] colorCode = (int[]) fColorCode.get(fr);
 
-            // у Angelica для 1.7.10 есть такой конструктор
-            batched = new BatchingFontRenderer(fr, charWidth, glyphWidth, fontTex);
-            return batched;
-        } catch (Throwable t) {
-            // если что-то не получилось — просто работаем без batched
-            return null;
-        }
+        // unicodePageLocations
+        Field fUniPages = FontRenderer.class.getDeclaredField("unicodePageLocations");
+        fUniPages.setAccessible(true);
+        ResourceLocation[] unicodePages = (ResourceLocation[]) fUniPages.get(fr);
+
+        // locationFontTexture (asciiTex)
+        Field fLoc = FontRenderer.class.getDeclaredField("locationFontTexture");
+        fLoc.setAccessible(true);
+        ResourceLocation fontTex = (ResourceLocation) fLoc.get(fr);
+
+        batched = new BatchingFontRenderer(fr, unicodePages, charWidth, glyphWidth, colorCode, fontTex);
+        return batched;
+    } catch (Throwable t) {
+        return null;
     }
+}
 
     @Override
     public void renderTileEntityAt(TileEntity te, double x, double y, double z, float partialTicks) {
