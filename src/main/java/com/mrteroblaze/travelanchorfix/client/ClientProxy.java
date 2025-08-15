@@ -4,7 +4,6 @@ import com.mrteroblaze.travelanchorfix.client.render.TravelAnchorTESRFix;
 
 import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
-
 import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 
 public class ClientProxy extends com.mrteroblaze.travelanchorfix.server.ServerProxy {
