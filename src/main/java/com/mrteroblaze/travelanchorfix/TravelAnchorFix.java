@@ -13,7 +13,7 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 public class TravelAnchorFix {
 
     public static final String MODID = "travelanchorfix";
-    public static final String MOD_NAME = "Travel Anchor Fix";
+    public static final String MODNAME = "Travel Anchor Fix";
 
     @SidedProxy(
         clientSide = "com.mrteroblaze.travelanchorfix.client.ClientProxy",
