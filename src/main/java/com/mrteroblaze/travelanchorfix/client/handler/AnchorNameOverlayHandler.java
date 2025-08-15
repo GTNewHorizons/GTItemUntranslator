@@ -7,7 +7,7 @@ import net.minecraft.tileentity.TileEntity;
 import org.lwjgl.opengl.GL11;
 import crazypants.enderio.teleport.TravelController;
 import crazypants.enderio.teleport.anchor.TileTravelAnchor;
-import crazypants.util.BlockCoord;
+import com.enderio.core.common.util.BlockCoord;
 
 import java.util.List;
 
