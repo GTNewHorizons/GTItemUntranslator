@@ -11,7 +11,7 @@ import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 
-import crazypants.enderio.teleport.TileTravelAnchor;
+import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 
 public class TravelAnchorTESRFix extends TileEntitySpecialRenderer {
 
