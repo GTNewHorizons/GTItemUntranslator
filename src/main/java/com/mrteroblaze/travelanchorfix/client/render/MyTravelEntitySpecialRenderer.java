@@ -24,15 +24,15 @@ public class MyTravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
         FontRenderer fr = Minecraft.getMinecraft().fontRenderer;
         boolean oldUnicode = fr.getUnicodeFlag();
-        fr.setUnicodeFlag(true); // включаем Unicode, чтобы убрать квадратики
+        fr.setUnicodeFlag(true); // включаем Unicode для устранения квадратиков
 
         GL11.glPushMatrix();
         GL11.glTranslated(x + 0.5, y + 1.2, z + 0.5);
 
-        // Поворот к игроку
+        // Используем SRG-имена для 1.7.10
         TileEntityRendererDispatcher renderer = TileEntityRendererDispatcher.instance;
-        GL11.glRotatef(-renderer.playerViewY, 0.0F, 1.0F, 0.0F);
-        GL11.glRotatef(renderer.playerViewX, 1.0F, 0.0F, 0.0F);
+        GL11.glRotatef(-renderer.field_147547_x, 0.0F, 1.0F, 0.0F); // yaw
+        GL11.glRotatef(renderer.field_147546_y, 1.0F, 0.0F, 0.0F);  // pitch
 
         GL11.glScalef(-0.025F, -0.025F, 0.025F);
         GL11.glDisable(GL11.GL_LIGHTING);
