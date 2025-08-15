@@ -6,7 +6,6 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
 import org.lwjgl.opengl.GL11;
-import java.util.Locale;
 
 public class MyTravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
@@ -22,7 +21,6 @@ public class MyTravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
             return;
         }
 
-        // --- Включаем Unicode рендер ---
         FontRenderer fr = Minecraft.getMinecraft().fontRenderer;
         boolean oldUnicode = fr.getUnicodeFlag();
         fr.setUnicodeFlag(true);
@@ -30,9 +28,9 @@ public class MyTravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
         GL11.glPushMatrix();
         GL11.glTranslated(x + 0.5, y + 1.2, z + 0.5);
 
-        // Разворачиваем к игроку
-        GL11.glRotatef(-Minecraft.getMinecraft().getRenderManager().playerViewY, 0.0F, 1.0F, 0.0F);
-        GL11.glRotatef(Minecraft.getMinecraft().getRenderManager().playerViewX, 1.0F, 0.0F, 0.0F);
+        // Разворачиваем к игроку (MC 1.7.10: поля напрямую)
+        GL11.glRotatef(-Minecraft.getMinecraft().renderManager.playerViewY, 0.0F, 1.0F, 0.0F);
+        GL11.glRotatef(Minecraft.getMinecraft().renderManager.playerViewX, 1.0F, 0.0F, 0.0F);
 
         GL11.glScalef(-0.025F, -0.025F, 0.025F);
         GL11.glDisable(GL11.GL_LIGHTING);
@@ -45,7 +43,6 @@ public class MyTravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
         GL11.glEnable(GL11.GL_LIGHTING);
         GL11.glPopMatrix();
 
-        // --- Возвращаем старую настройку ---
         fr.setUnicodeFlag(oldUnicode);
     }
 }
