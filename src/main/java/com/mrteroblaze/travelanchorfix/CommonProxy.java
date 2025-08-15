@@ -1,4 +1,4 @@
-package com.mrteroblaze.travelanchorfix.client;
+package com.mrteroblaze.travelanchorfix;
 
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
