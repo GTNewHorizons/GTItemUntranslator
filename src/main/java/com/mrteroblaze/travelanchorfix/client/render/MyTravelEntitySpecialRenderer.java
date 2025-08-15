@@ -1,11 +1,13 @@
 package com.mrteroblaze.travelanchorfix.client.render;
 
-import crazypants.enderio.teleport.anchor.TileTravelAnchor;
-import crazypants.enderio.teleport.anchor.TravelEntitySpecialRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.tileentity.TileEntity;
+
 import org.lwjgl.util.vector.Vector3f;
+
+import crazypants.enderio.teleport.anchor.TileTravelAnchor;
+import crazypants.enderio.teleport.anchor.TravelEntitySpecialRenderer;
 
 public class MyTravelEntitySpecialRenderer extends TravelEntitySpecialRenderer {
 
@@ -28,9 +30,8 @@ public class MyTravelEntitySpecialRenderer extends TravelEntitySpecialRenderer {
 
     private Vector3f getAnchorPosition(TileEntity tileentity) {
         return new Vector3f(
-                (float) tileentity.xCoord + 0.5f,
-                (float) tileentity.yCoord + 0.5f,
-                (float) tileentity.zCoord + 0.5f
-        );
+            (float) tileentity.xCoord + 0.5f,
+            (float) tileentity.yCoord + 0.5f,
+            (float) tileentity.zCoord + 0.5f);
     }
 }
