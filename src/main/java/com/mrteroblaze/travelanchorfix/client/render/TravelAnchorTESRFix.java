@@ -2,11 +2,6 @@ package com.mrteroblaze.travelanchorfix.client.render;
 
 import java.lang.reflect.Field;
 
-import org.lwjgl.opengl.GL11;
-
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.RenderGlobal;
@@ -19,6 +14,12 @@ import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.world.World;
+
+import org.lwjgl.opengl.GL11;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 
 @SideOnly(Side.CLIENT)
 public class TravelAnchorTESRFix extends net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer {
@@ -49,11 +50,13 @@ public class TravelAnchorTESRFix extends net.minecraft.client.renderer.tileentit
         if (mc == null || mc.theWorld == null || mc.thePlayer == null) return;
 
         // Показ только если держим Staff ИЛИ стоим на якоре
-        final boolean show = isHoldingTravelStaff(mc) || isStandingOnAnchor(mc.theWorld, mc.thePlayer.posX, mc.thePlayer.posY, mc.thePlayer.posZ);
+        final boolean show = isHoldingTravelStaff(mc)
+            || isStandingOnAnchor(mc.theWorld, mc.thePlayer.posX, mc.thePlayer.posY, mc.thePlayer.posZ);
         if (!show) return;
 
         final String name = anchor.getLabel();
-        if (name == null || name.trim().isEmpty()) return;
+        if (name == null || name.trim()
+            .isEmpty()) return;
 
         // Дистанция
         double distSq = mc.thePlayer.getDistanceSq(te.xCoord + 0.5, te.yCoord + 0.5, te.zCoord + 0.5);
@@ -80,7 +83,8 @@ public class TravelAnchorTESRFix extends net.minecraft.client.renderer.tileentit
             // на всякий случай fallback по имени регистра
             try {
                 String unloc = held.getUnlocalizedName();
-                return unloc != null && unloc.toLowerCase(java.util.Locale.ROOT).contains("travelstaff");
+                return unloc != null && unloc.toLowerCase(java.util.Locale.ROOT)
+                    .contains("travelstaff");
             } catch (Throwable ignored2) {}
             return false;
         }
@@ -108,7 +112,8 @@ public class TravelAnchorTESRFix extends net.minecraft.client.renderer.tileentit
         GL11.glPushMatrix();
         GL11.glTranslated(x, y, z);
 
-        AxisAlignedBB aabb = AxisAlignedBB.getBoundingBox(0, 0, 0, 1, 1, 1).expand(0.002, 0.002, 0.002);
+        AxisAlignedBB aabb = AxisAlignedBB.getBoundingBox(0, 0, 0, 1, 1, 1)
+            .expand(0.002, 0.002, 0.002);
 
         GL11.glDisable(GL11.GL_TEXTURE_2D);
         GL11.glDisable(GL11.GL_LIGHTING);
@@ -174,7 +179,8 @@ public class TravelAnchorTESRFix extends net.minecraft.client.renderer.tileentit
 
         GL11.glPopMatrix();
         // вернуть текстурный биндинг (иногда полезно)
-        mc.getTextureManager().bindTexture(TextureMap.locationBlocksTexture);
+        mc.getTextureManager()
+            .bindTexture(TextureMap.locationBlocksTexture);
     }
 
     private void drawQuad(int x, int y, int w, int h, int argb) {
@@ -188,10 +194,10 @@ public class TravelAnchorTESRFix extends net.minecraft.client.renderer.tileentit
         GL11.glDisable(GL11.GL_TEXTURE_2D);
         GL11.glColor4f(r, g, b, a);
         t.startDrawingQuads();
-        t.addVertex(x,     y + h, 0);
+        t.addVertex(x, y + h, 0);
         t.addVertex(x + w, y + h, 0);
-        t.addVertex(x + w, y,     0);
-        t.addVertex(x,     y,     0);
+        t.addVertex(x + w, y, 0);
+        t.addVertex(x, y, 0);
         t.draw();
         GL11.glEnable(GL11.GL_TEXTURE_2D);
     }
