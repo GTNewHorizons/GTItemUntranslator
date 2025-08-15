@@ -7,7 +7,6 @@ import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 import crazypants.enderio.teleport.TravelController;
-import com.enderio.core.common.util.BlockCoord;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.Tessellator;
@@ -22,7 +21,7 @@ import org.lwjgl.util.vector.Vector4f;
 
 import crazypants.enderio.EnderIO; // для выбранного цвета, если нужно
 import crazypants.enderio.config.Config;
-import crazypants.enderio.teleport.anchor.BlockCoord;
+import com.enderio.core.common.util.BlockCoord;
 
 @SideOnly(Side.CLIENT)
 public class TravelAnchorFixRenderer extends net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer {
