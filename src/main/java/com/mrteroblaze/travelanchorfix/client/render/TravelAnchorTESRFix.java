@@ -1,116 +1,125 @@
 package com.mrteroblaze.travelanchorfix.client.render;
 
-import crazypants.enderio.EnderIO;
-import crazypants.enderio.teleport.TravelController;
-import crazypants.enderio.teleport.anchor.TileTravelAnchor;
-import crazypants.render.BoundingBox;
-import crazypants.render.CubeRenderer;
+import cpw.mods.fml.client.registry.ClientRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Vec3;
 import org.lwjgl.opengl.GL11;
 
-import java.util.List;
+import com.mrteroblaze.travelanchorfix.common.tile.TileTravelAnchor;
 
 public class TravelAnchorTESRFix extends TileEntitySpecialRenderer {
 
-    private static final ResourceLocation TEXTURE = new ResourceLocation("enderio:textures/blocks/blockTravelAnchor.png");
+    public static void register() {
+        ClientRegistry.bindTileEntitySpecialRenderer(TileTravelAnchor.class, new TravelAnchorTESRFix());
+    }
 
     @Override
     public void renderTileEntityAt(TileEntity te, double x, double y, double z, float partialTick) {
-        if (!(te instanceof TileTravelAnchor)) {
-            return;
-        }
-
-        Minecraft mc = Minecraft.getMinecraft();
+        if (!(te instanceof TileTravelAnchor)) return;
         TileTravelAnchor anchor = (TileTravelAnchor) te;
+        Minecraft mc = Minecraft.getMinecraft();
 
-        // Проверяем, нужно ли показывать цели (игрок на якоре или держит Staff)
-        if (!TravelController.instance.showTargets(mc.thePlayer)) {
-            return;
-        }
+        double dx = mc.thePlayer.posX - (anchor.xCoord + 0.5);
+        double dy = mc.thePlayer.posY - (anchor.yCoord + 0.5);
+        double dz = mc.thePlayer.posZ - (anchor.zCoord + 0.5);
+        double distSq = dx * dx + dy * dy + dz * dz;
 
-        // Добавляем якорь как цель телепорта
-        TravelController.instance.addCandidate(anchor);
+        // Радиус берём из конфига
+        int maxDist = 512; // Или прочитать из твоего config
+        if (distSq > maxDist * maxDist) return;
 
-        // Рендер рамки вокруг якоря
-        renderAnchorFrame(anchor, x, y, z);
-
-        // Рендер имени якоря
-        String name = anchor.getLabel();
-        if (name != null && !name.trim().isEmpty()) {
-            renderNameTag(name, x, y + 1.2, z);
-        }
-    }
-
-    private void renderAnchorFrame(TileTravelAnchor anchor, double x, double y, double z) {
         GL11.glPushMatrix();
         GL11.glTranslated(x + 0.5, y + 0.5, z + 0.5);
-
-        GL11.glEnable(GL11.GL_BLEND);
-        OpenGlHelper.glBlendFunc(770, 771, 1, 0);
-        GL11.glDisable(GL11.GL_TEXTURE_2D);
-        GL11.glDisable(GL11.GL_LIGHTING);
-
-        float sf = 1.02f;
-        CubeRenderer.get().render(
-                BoundingBox.UNIT_CUBE.scale(sf, sf, sf),
-                EnderIO.blockTravelPlatform.getBlockTextureFromSide(0) // Без Chisel API
-        );
-
-        GL11.glEnable(GL11.GL_LIGHTING);
-        GL11.glEnable(GL11.GL_TEXTURE_2D);
-        GL11.glDisable(GL11.GL_BLEND);
-
+        renderCube(anchor);
+        renderLabel(anchor, mc);
         GL11.glPopMatrix();
     }
 
-    private void renderNameTag(String name, double x, double y, double z) {
+    private void renderCube(TileTravelAnchor anchor) {
         Minecraft mc = Minecraft.getMinecraft();
+        IIcon icon = mc.getTextureMapBlocks().getAtlasSprite(
+                anchor.getBlockType().getIcon(0, 0).getIconName()
+        );
+
+        mc.getTextureManager().bindTexture(new ResourceLocation("textures/atlas/blocks.png"));
+
+        float sf = 1.0F; // Масштаб
+        AxisAlignedBB box = AxisAlignedBB.getBoundingBox(-0.5, -0.5, -0.5, 0.5, 0.5, 0.5)
+                .expand((sf - 1) / 2.0, (sf - 1) / 2.0, (sf - 1) / 2.0);
+
+        Tessellator tess = Tessellator.instance;
+        tess.startDrawingQuads();
+
+        // Нижняя грань
+        tess.addVertexWithUV(box.minX, box.minY, box.maxZ, icon.getMinU(), icon.getMaxV());
+        tess.addVertexWithUV(box.maxX, box.minY, box.maxZ, icon.getMaxU(), icon.getMaxV());
+        tess.addVertexWithUV(box.maxX, box.minY, box.minZ, icon.getMaxU(), icon.getMinV());
+        tess.addVertexWithUV(box.minX, box.minY, box.minZ, icon.getMinU(), icon.getMinV());
+
+        // Верхняя грань
+        tess.addVertexWithUV(box.minX, box.maxY, box.minZ, icon.getMinU(), icon.getMinV());
+        tess.addVertexWithUV(box.maxX, box.maxY, box.minZ, icon.getMaxU(), icon.getMinV());
+        tess.addVertexWithUV(box.maxX, box.maxY, box.maxZ, icon.getMaxU(), icon.getMaxV());
+        tess.addVertexWithUV(box.minX, box.maxY, box.maxZ, icon.getMinU(), icon.getMaxV());
+
+        // Северная грань
+        tess.addVertexWithUV(box.minX, box.minY, box.minZ, icon.getMinU(), icon.getMaxV());
+        tess.addVertexWithUV(box.maxX, box.minY, box.minZ, icon.getMaxU(), icon.getMaxV());
+        tess.addVertexWithUV(box.maxX, box.maxY, box.minZ, icon.getMaxU(), icon.getMinV());
+        tess.addVertexWithUV(box.minX, box.maxY, box.minZ, icon.getMinU(), icon.getMinV());
+
+        // Южная грань
+        tess.addVertexWithUV(box.minX, box.maxY, box.maxZ, icon.getMinU(), icon.getMinV());
+        tess.addVertexWithUV(box.maxX, box.maxY, box.maxZ, icon.getMaxU(), icon.getMinV());
+        tess.addVertexWithUV(box.maxX, box.minY, box.maxZ, icon.getMaxU(), icon.getMaxV());
+        tess.addVertexWithUV(box.minX, box.minY, box.maxZ, icon.getMinU(), icon.getMaxV());
+
+        // Западная грань
+        tess.addVertexWithUV(box.minX, box.minY, box.maxZ, icon.getMinU(), icon.getMaxV());
+        tess.addVertexWithUV(box.minX, box.maxY, box.maxZ, icon.getMaxU(), icon.getMaxV());
+        tess.addVertexWithUV(box.minX, box.maxY, box.minZ, icon.getMaxU(), icon.getMinV());
+        tess.addVertexWithUV(box.minX, box.minY, box.minZ, icon.getMinU(), icon.getMinV());
+
+        // Восточная грань
+        tess.addVertexWithUV(box.maxX, box.minY, box.minZ, icon.getMinU(), icon.getMaxV());
+        tess.addVertexWithUV(box.maxX, box.maxY, box.minZ, icon.getMaxU(), icon.getMaxV());
+        tess.addVertexWithUV(box.maxX, box.maxY, box.maxZ, icon.getMaxU(), icon.getMinV());
+        tess.addVertexWithUV(box.maxX, box.minY, box.maxZ, icon.getMinU(), icon.getMinV());
+
+        tess.draw();
+    }
+
+    private void renderLabel(TileTravelAnchor anchor, Minecraft mc) {
+        String label = anchor.getLabel();
+        if (label == null || label.isEmpty()) return;
+
         FontRenderer fontrenderer = mc.fontRenderer;
-        RenderManager renderManager = RenderManager.instance;
+        float scale = 0.016666668F * 1.6F;
 
         GL11.glPushMatrix();
-        GL11.glTranslated(x + 0.5, y + 0.5, z + 0.5);
+        GL11.glTranslatef(0.0F, 1.5F, 0.0F);
         GL11.glNormal3f(0.0F, 1.0F, 0.0F);
-
-        // Поворачиваем текст к игроку
-        GL11.glRotatef(-renderManager.playerViewY, 0.0F, 1.0F, 0.0F);
-        GL11.glRotatef(renderManager.playerViewX, 1.0F, 0.0F, 0.0F);
-
-        GL11.glScalef(-0.025F, -0.025F, 0.025F);
+        GL11.glRotatef(-mc.thePlayer.rotationYaw, 0.0F, 1.0F, 0.0F);
+        GL11.glRotatef(mc.thePlayer.rotationPitch, 1.0F, 0.0F, 0.0F);
+        GL11.glScalef(-scale, -scale, scale);
         GL11.glDisable(GL11.GL_LIGHTING);
         GL11.glDepthMask(false);
         GL11.glDisable(GL11.GL_DEPTH_TEST);
         GL11.glEnable(GL11.GL_BLEND);
-        OpenGlHelper.glBlendFunc(770, 771, 1, 0);
 
-        Tessellator tessellator = Tessellator.instance;
-        GL11.glDisable(GL11.GL_TEXTURE_2D);
-        tessellator.startDrawingQuads();
-        int j = fontrenderer.getStringWidth(name) / 2;
-        tessellator.setColorRGBA_F(0.0F, 0.0F, 0.0F, 0.25F);
-        tessellator.addVertex(-j - 1, -1, 0.0D);
-        tessellator.addVertex(-j - 1, 8, 0.0D);
-        tessellator.addVertex(j + 1, 8, 0.0D);
-        tessellator.addVertex(j + 1, -1, 0.0D);
-        tessellator.draw();
-        GL11.glEnable(GL11.GL_TEXTURE_2D);
+        int width = fontrenderer.getStringWidth(label) / 2;
+        fontrenderer.drawString(label, -width, 0, 0xFFFFFF);
 
-        fontrenderer.drawString(name, -j, 0, 553648127);
         GL11.glEnable(GL11.GL_DEPTH_TEST);
         GL11.glDepthMask(true);
-        fontrenderer.drawString(name, -j, 0, -1);
-
         GL11.glEnable(GL11.GL_LIGHTING);
         GL11.glDisable(GL11.GL_BLEND);
-        GL11.glColor4f(1F, 1F, 1F, 1F);
         GL11.glPopMatrix();
     }
 }
