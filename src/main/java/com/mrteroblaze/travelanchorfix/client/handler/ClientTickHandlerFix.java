@@ -3,7 +3,7 @@ package com.mrteroblaze.travelanchorfix.handler;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import crazypants.enderio.teleport.anchor.TileTravelAnchor;
-import crazypants.enderio.teleport.anchor.TravelController;
+import crazypants.enderio.teleport.TravelController;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
