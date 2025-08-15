@@ -5,19 +5,19 @@ import crazypants.enderio.teleport.anchor.TravelEntitySpecialRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 
-public class MyTravelEntitySpecialRenderer extends TravelEntitySpecialRenderer<TileTravelAnchor> {
+public class MyTravelEntitySpecialRenderer extends TravelEntitySpecialRenderer {
 
     @Override
     protected void renderName(TileTravelAnchor te, double x, double y, double z, float partialTick) {
-        // Принудительно включаем unicode-рендеринг, чтобы избежать квадратиков с Angelica
+        // Принудительно включаем Unicode-рендеринг, чтобы избежать квадратиков с Angelica
         FontRenderer fr = Minecraft.getMinecraft().fontRenderer;
         boolean prevUnicode = fr.getUnicodeFlag();
         fr.setUnicodeFlag(true);
 
-        // Вызываем стандартный рендер
+        // Вызываем оригинальный метод
         super.renderName(te, x, y, z, partialTick);
 
-        // Возвращаем исходный флаг
+        // Возвращаем флаг
         fr.setUnicodeFlag(prevUnicode);
     }
 }
