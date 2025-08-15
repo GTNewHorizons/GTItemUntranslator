@@ -6,19 +6,19 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 
 @Mod(
     modid = TravelAnchorFix.MODID,
-    name = TravelAnchorFix.MODNAME,
-    version = TravelAnchorFix.VERSION,
+    name = TravelAnchorFix.MOD_NAME,
+    version = "@VERSION@",
     acceptedMinecraftVersions = "[1.7.10]"
 )
 public class TravelAnchorFix {
 
     public static final String MODID = "travelanchorfix";
-    public static final String MODNAME = "Travel Anchor Fix";
+    public static final String MOD_NAME = "Travel Anchor Fix";
 	public static final String VERSION = "1.0.0";
 
     @SidedProxy(
         clientSide = "com.mrteroblaze.travelanchorfix.client.ClientProxy",
-        serverSide = "com.mrteroblaze.travelanchorfix.client.ClientProxy" // серверной логики нет
+        serverSide = "com.mrteroblaze.travelanchorfix.client.ClientProxy"
     )
     public static com.mrteroblaze.travelanchorfix.client.ClientProxy proxy;
 

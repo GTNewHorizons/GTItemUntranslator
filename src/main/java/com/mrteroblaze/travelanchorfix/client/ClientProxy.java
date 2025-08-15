@@ -6,7 +6,7 @@ import com.mrteroblaze.travelanchorfix.client.render.TravelAnchorFixRenderer;
 
 public class ClientProxy {
     public void initClient() {
-        // переопределяем TESR для TileTravelAnchor
+        // Переопределяем TESR для TileTravelAnchor
         ClientRegistry.bindTileEntitySpecialRenderer(TileTravelAnchor.class, new TravelAnchorFixRenderer());
     }
 }
