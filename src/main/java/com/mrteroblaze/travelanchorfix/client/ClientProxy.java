@@ -1,25 +1,13 @@
 package com.mrteroblaze.travelanchorfix.client;
 
-import com.mrteroblaze.travelanchorfix.client.handler.AnchorNameOverlayHandler;
-import com.mrteroblaze.travelanchorfix.CommonProxy;
-import cpw.mods.fml.common.event.FMLInitializationEvent;
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.eventhandler.EventBus;
-import cpw.mods.fml.common.FMLCommonHandler;
-import net.minecraftforge.common.MinecraftForge;
+import com.mrteroblaze.travelanchorfix.server.ServerProxy;
+import com.mrteroblaze.travelanchorfix.client.render.MyTravelEntitySpecialRenderer;
+import cpw.mods.fml.client.registry.ClientRegistry;
+import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 
-public class ClientProxy extends CommonProxy {
-
+public class ClientProxy extends ServerProxy {
     @Override
-    public void preInit(FMLPreInitializationEvent event) {
-        super.preInit(event);
-    }
-
-    @Override
-    public void init(FMLInitializationEvent event) {
-        super.init(event);
-        // Регистрируем наш хендлер
-        AnchorNameOverlayHandler overlayHandler = new AnchorNameOverlayHandler();
-        MinecraftForge.EVENT_BUS.register(overlayHandler);
+    public void init() {
+        ClientRegistry.bindTileEntitySpecialRenderer(TileTravelAnchor.class, new MyTravelEntitySpecialRenderer());
     }
 }
