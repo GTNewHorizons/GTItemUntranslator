@@ -1,6 +1,6 @@
 package com.mrteroblaze.travelanchorfix.client;
 
-import com.mrteroblaze.travelanchorfix.common.CommonProxy;
+import com.mrteroblaze.travelanchorfix.CommonProxy;
 import com.mrteroblaze.travelanchorfix.client.handler.AnchorNameOverlayHandler;
 
 import cpw.mods.fml.common.event.FMLInitializationEvent;
