@@ -2,7 +2,6 @@ package com.mrteroblaze.travelanchorfix.client.render;
 
 import crazypants.enderio.EnderIO;
 import crazypants.enderio.teleport.TravelController;
-import crazypants.enderio.teleport.TravelSource;
 import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 import crazypants.render.BoundingBox;
 import crazypants.render.CubeRenderer;
