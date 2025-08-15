@@ -2,7 +2,7 @@ package com.mrteroblaze.travelanchorfix.client;
 
 import com.mrteroblaze.travelanchorfix.client.handler.ClientTickHandlerFix;
 import com.mrteroblaze.travelanchorfix.client.render.TravelAnchorTESRFix;
-import com.mrteroblaze.travelanchorfix.common.CommonProxy;
+import com.mrteroblaze.travelanchorfix.client.CommonProxy;
 import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.common.FMLCommonHandler;
