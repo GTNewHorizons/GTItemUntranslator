@@ -1,11 +1,12 @@
 package com.mrteroblaze.travelanchorfix.client;
 
-import com.mrteroblaze.travelanchorfix.client.render.MyTravelEntitySpecialRenderer;
 import cpw.mods.fml.client.registry.ClientRegistry;
 import crazypants.enderio.teleport.anchor.TileTravelAnchor;
+import com.mrteroblaze.travelanchorfix.client.render.TravelAnchorFixRenderer;
 
 public class ClientProxy {
-    public void init() {
-        ClientRegistry.bindTileEntitySpecialRenderer(TileTravelAnchor.class, new MyTravelEntitySpecialRenderer());
+    public void initClient() {
+        // переопределяем TESR для TileTravelAnchor
+        ClientRegistry.bindTileEntitySpecialRenderer(TileTravelAnchor.class, new TravelAnchorFixRenderer());
     }
 }
