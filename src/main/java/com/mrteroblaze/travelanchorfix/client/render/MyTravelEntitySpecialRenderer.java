@@ -29,9 +29,9 @@ public class MyTravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
         GL11.glPushMatrix();
         GL11.glTranslated(x + 0.5, y + 1.2, z + 0.5);
 
-        // Разворачиваем к игроку (MC 1.7.10)
-        GL11.glRotatef(-TileEntityRendererDispatcher.instance.playerViewY, 0.0F, 1.0F, 0.0F);
-        GL11.glRotatef(TileEntityRendererDispatcher.instance.playerViewX, 1.0F, 0.0F, 0.0F);
+        // Разворачиваем к игроку (MC 1.7.10, obfuscated names)
+        GL11.glRotatef(-TileEntityRendererDispatcher.instance.field_147547_x, 0.0F, 1.0F, 0.0F);
+        GL11.glRotatef(TileEntityRendererDispatcher.instance.field_147546_y, 1.0F, 0.0F, 0.0F);
 
         GL11.glScalef(-0.025F, -0.025F, 0.025F);
         GL11.glDisable(GL11.GL_LIGHTING);
