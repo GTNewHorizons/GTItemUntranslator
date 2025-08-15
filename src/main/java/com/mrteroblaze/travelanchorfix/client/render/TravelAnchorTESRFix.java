@@ -1,6 +1,5 @@
 package com.mrteroblaze.travelanchorfix.client.render;
 
-import cpw.mods.fml.client.registry.ClientRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.Tessellator;
@@ -9,8 +8,10 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
+
 import org.lwjgl.opengl.GL11;
 
+import cpw.mods.fml.client.registry.ClientRegistry;
 import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 
 public class TravelAnchorTESRFix extends TileEntitySpecialRenderer {
@@ -43,15 +44,18 @@ public class TravelAnchorTESRFix extends TileEntitySpecialRenderer {
 
     private void renderCube(TileTravelAnchor anchor) {
         Minecraft mc = Minecraft.getMinecraft();
-        IIcon icon = mc.getTextureMapBlocks().getAtlasSprite(
-                anchor.getBlockType().getIcon(0, 0).getIconName()
-        );
+        IIcon icon = mc.getTextureMapBlocks()
+            .getAtlasSprite(
+                anchor.getBlockType()
+                    .getIcon(0, 0)
+                    .getIconName());
 
-        mc.getTextureManager().bindTexture(new ResourceLocation("textures/atlas/blocks.png"));
+        mc.getTextureManager()
+            .bindTexture(new ResourceLocation("textures/atlas/blocks.png"));
 
         float sf = 1.0F; // Масштаб
         AxisAlignedBB box = AxisAlignedBB.getBoundingBox(-0.5, -0.5, -0.5, 0.5, 0.5, 0.5)
-                .expand((sf - 1) / 2.0, (sf - 1) / 2.0, (sf - 1) / 2.0);
+            .expand((sf - 1) / 2.0, (sf - 1) / 2.0, (sf - 1) / 2.0);
 
         Tessellator tess = Tessellator.instance;
         tess.startDrawingQuads();
