@@ -1,41 +1,54 @@
-package com.mrteroblaze.travelanchorfix.client.handler;
+package com.mrteroblaze.travelanchorfix.handler;
 
-import crazypants.enderio.teleport.TravelController;
-import crazypants.enderio.teleport.TileTravelAnchor;
-import crazypants.enderio.item.ItemTravelStaff;
+import cpw.mods.fml.common.ITickHandler;
+import cpw.mods.fml.common.TickType;
+import crazypants.enderio.machine.travel.TileTravelAnchor;
+import crazypants.enderio.machine.travel.TravelController;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent;
+import net.minecraft.tileentity.TileEntity;
 
-public class ClientTickHandlerFix {
+import java.util.EnumSet;
 
-    private final Minecraft mc = Minecraft.getMinecraft();
+public class ClientTickHandlerFix implements ITickHandler {
 
-    @SubscribeEvent
-    public void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
-        if (mc.theWorld == null || mc.thePlayer == null) return;
+    @Override
+    public void tickStart(EnumSet<TickType> type, Object... tickData) {
+        if (type.contains(TickType.CLIENT)) {
+            Minecraft mc = Minecraft.getMinecraft();
+            EntityPlayer player = mc.thePlayer;
 
-        EntityPlayer player = mc.thePlayer;
+            if (player != null && mc.currentScreen == null) {
+                // Обновляем отображение
+                TravelController.instance.onClientTick();
 
-        boolean holdingStaff = isHoldingStaff(player);
-        boolean standingOnAnchor = isStandingOnAnchor(player);
+                // Проверяем телепортацию
+                TileEntity te = mc.theWorld.getTileEntity(
+                        (int) Math.floor(player.posX),
+                        (int) Math.floor(player.posY - 1),
+                        (int) Math.floor(player.posZ)
+                );
 
-        if (holdingStaff || standingOnAnchor) {
-            // Показываем якоря в радиусе
-            TravelController.instance.updateTargets(player);
+                if (te instanceof TileTravelAnchor) {
+                    if (player.isSneaking()) {
+                        // Присел на якоре — телепортируем
+                        TravelController.instance.activateSelectedTravelTarget(player);
+                    }
+                }
+            }
         }
     }
 
-    private boolean isHoldingStaff(EntityPlayer player) {
-        ItemStack held = player.getCurrentEquippedItem();
-        return held != null && held.getItem() instanceof ItemTravelStaff;
+    @Override
+    public void tickEnd(EnumSet<TickType> type, Object... tickData) {}
+
+    @Override
+    public EnumSet<TickType> ticks() {
+        return EnumSet.of(TickType.CLIENT);
     }
 
-    private boolean isStandingOnAnchor(EntityPlayer player) {
-        TileTravelAnchor te = TravelController.instance.getTileEntityTravelAnchor(player);
-        return te != null;
+    @Override
+    public String getLabel() {
+        return "TravelAnchorFix_ClientTick";
     }
 }
