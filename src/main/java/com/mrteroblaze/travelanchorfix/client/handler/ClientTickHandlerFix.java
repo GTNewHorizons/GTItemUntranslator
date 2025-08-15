@@ -1,39 +1,38 @@
-package com.mrteroblaze.travelanchorfix.handler;
+package com.mrteroblaze.travelanchorfix.client.handler;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
-import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 import crazypants.enderio.teleport.TravelController;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.tileentity.TileEntity;
+import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 
 public class ClientTickHandlerFix {
 
+    private final Minecraft mc = Minecraft.getMinecraft();
+
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.START) return;
+        if (event.phase != TickEvent.Phase.END || mc.theWorld == null || mc.thePlayer == null) {
+            return;
+        }
 
-        Minecraft mc = Minecraft.getMinecraft();
         EntityPlayer player = mc.thePlayer;
 
-        if (player != null && mc.currentScreen == null) {
-            // Обновляем список якорей для отображения
-            TravelController.instance.onClientTick();
+        boolean holdingStaff = TravelController.instance.isTravelItemEquipped(player);
+        boolean standingOnAnchor = false;
 
-            // Проверка: игрок стоит на якоре?
-            TileEntity te = mc.theWorld.getTileEntity(
-                    (int) Math.floor(player.posX),
-                    (int) Math.floor(player.posY - 1),
-                    (int) Math.floor(player.posZ)
-            );
+        if (mc.theWorld.getTileEntity(
+                (int) Math.floor(player.posX),
+                (int) Math.floor(player.posY - 1),
+                (int) Math.floor(player.posZ)
+        ) instanceof TileTravelAnchor) {
+            standingOnAnchor = true;
+        }
 
-            if (te instanceof TileTravelAnchor) {
-                // Если присел на якоре — телепортируем
-                if (player.isSneaking()) {
-                    TravelController.instance.activateSelectedTravelTarget(player);
-                }
-            }
+        if (holdingStaff || standingOnAnchor) {
+            // Обновляем список доступных якорей
+            TravelController.instance.onClientTick(new TickEvent.ClientTickEvent(TickEvent.Phase.END));
         }
     }
 }
