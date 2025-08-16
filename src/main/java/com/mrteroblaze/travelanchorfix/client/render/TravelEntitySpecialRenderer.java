@@ -6,6 +6,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import crazypants.enderio.EnderIO;
 import crazypants.enderio.teleport.TravelController;
 import crazypants.enderio.teleport.anchor.TileTravelAnchor;
+import crazypants.enderio.teleport.anchor.BlockTravelAnchor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.entity.RenderManager;
@@ -21,7 +22,7 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
     private static IIcon getSelectedOverlayIcon() {
         try {
-            java.lang.reflect.Field f = crazypants.enderio.machine.travel.BlockTravelAnchor.class.getDeclaredField("selectedOverlayIcon");
+            java.lang.reflect.Field f = crazypants.enderio.teleport.anchor.BlockTravelAnchor.class.getDeclaredField("selectedOverlayIcon");
             f.setAccessible(true);
             return (IIcon) f.get(EnderIO.blockTravelPlatform);
         } catch (Throwable t) {
@@ -32,7 +33,7 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
     private static IIcon getHighlightOverlayIcon() {
         try {
-            java.lang.reflect.Field f = crazypants.enderio.machine.travel.BlockTravelAnchor.class.getDeclaredField("highlightOverlayIcon");
+            java.lang.reflect.Field f = crazypants.enderio.teleport.anchor.BlockTravelAnchor.class.getDeclaredField("highlightOverlayIcon");
             f.setAccessible(true);
             return (IIcon) f.get(EnderIO.blockTravelPlatform);
         } catch (Throwable t) {
