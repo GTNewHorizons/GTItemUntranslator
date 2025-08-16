@@ -60,12 +60,13 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
         }
     }
 
+    // Оставлено как в твоём рабочем файле (Angelica присутствует как зависимость),
+    // но сам bfr дальше НЕ используется для рисования текста.
     private BatchingFontRenderer travelAnchorBFR = null;
 
     private BatchingFontRenderer ensureTravelAnchorBFR(FontRenderer fr) {
         if (travelAnchorBFR != null) return travelAnchorBFR;
         try {
-            // Достаём приватные поля FontRenderer (MCP имена для 1.7.10)
             java.lang.reflect.Field fGlyphWidth = FontRenderer.class.getDeclaredField("glyphWidth");
             fGlyphWidth.setAccessible(true);
             byte[] glyphWidth = (byte[]) fGlyphWidth.get(fr);
@@ -82,9 +83,7 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
             fFontTex.setAccessible(true);
             ResourceLocation fontTex = (ResourceLocation) fFontTex.get(fr);
 
-            // У Angelica в 1.7.10 конструктор: (FontRenderer, ResourceLocation[], int[], byte[], int[], ResourceLocation)
-            // Здесь держим метод нетронутым, хотя дальше мы используем ванильный FontRenderer для рисования.
-            ResourceLocation[] unicodePages = null; // не используем
+            ResourceLocation[] unicodePages = null; // не используем на 1.7.10
             travelAnchorBFR = new BatchingFontRenderer(fr, unicodePages, charWidth, glyphWidth, colorCode, fontTex);
         } catch (Throwable t) {
             t.printStackTrace();
@@ -123,18 +122,21 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
         if (!ta.canSeeBlock(Minecraft.getMinecraft().thePlayer)) {
             return;
         }
+
         final CubeRenderer cr = CubeRenderer.get();
         final Tessellator tessellator = Tessellator.instance;
 
+        // === ВОЗВРАТ К 1.7.10: без getRayTraceVectorsEio ===
         Vector3d eye = Util.getEyePositionEio(Minecraft.getMinecraft().thePlayer);
         Vector3d loc = new Vector3d(tileentity.xCoord + 0.5, tileentity.yCoord + 0.5, tileentity.zCoord + 0.5);
-        Vector3d dir = Util.getRayTraceVectorsEio(Minecraft.getMinecraft().thePlayer, f).b;
-        dir.add(eye);
+        Vector3d look = Util.getLookVecEio(Minecraft.getMinecraft().thePlayer);
+        // точка "куда смотрим" на дистанции ~32 блока
+        Vector3d dir = new Vector3d(eye.x + look.x * 32.0, eye.y + look.y * 32.0, eye.z + look.z * 32.0);
         double diff = dir.distance(loc);
+        // === /ВОЗВРАТ К 1.7.10 ===
 
         double scale = 0.2 * (diff / 12d);
         scale = Math.max(0.2, scale);
-
         scale = RenderUtil.clamp(scale, 0.1, 2.5);
 
         GL11.glPushAttrib(GL11.GL_ENABLE_BIT | GL11.GL_LIGHTING_BIT);
@@ -231,8 +233,7 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
         }
 
         String toRender = ta.getLabel();
-        if (toRender != null && toRender.trim()
-            .length() > 0) {
+        if (toRender != null && toRender.trim().length() > 0) {
             GL11.glColor4f(1, 1, 1, 1);
             Vector4f bgCol = RenderUtil.DEFAULT_TEXT_BG_COL;
             if (TravelController.instance.isBlockSelected(new BlockCoord(tileentity))) {
@@ -247,87 +248,83 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
                     GL11.glScalef(globalScale, globalScale, globalScale);
                     Vector3f pos = new Vector3f(0, 1.2f, 0);
                     float size = 0.5f;
-                    // === TravelAnchorFix: отрисовка текста через Angelica BatchingFontRenderer ===
-                    {
-                        final Minecraft mc = Minecraft.getMinecraft();
-                        final FontRenderer fr = mc.fontRenderer;
 
-                        // Создаём/берём батчер
-                        final BatchingFontRenderer bfr = ensureTravelAnchorBFR(fr);
-                        if (bfr != null) {
-                            GL11.glPushMatrix();
-                            try {
-                                // pos = (0, 1.2f, 0) как в оригинале
-                                GL11.glTranslatef(pos.x, pos.y, pos.z);
+                    // ======= ТОЛЬКО СМЕНА РИСОВАНИЯ ТЕКСТА =======
+                    final Minecraft mc = Minecraft.getMinecraft();
+                    final FontRenderer fr = mc.fontRenderer;
+                    // (оставлено как раньше, не используется для draw)
+                    ensureTravelAnchorBFR(fr);
 
-                                // Billboard к камере
-                                RenderManager rm = RenderManager.instance;
-                                GL11.glRotatef(-rm.playerViewY, 0.0F, 1.0F, 0.0F);
-                                GL11.glRotatef(rm.playerViewX, 1.0F, 0.0F, 0.0F);
+                    GL11.glPushMatrix();
+                    try {
+                        // позиция текста
+                        GL11.glTranslatef(pos.x, pos.y, pos.z);
 
-                                // Масштаб
-                                final float s = 0.025F * (size * 2.0F);
-                                GL11.glScalef(-s, -s, s);
+                        // billboard к камере
+                        RenderManager rm = RenderManager.instance;
+                        GL11.glRotatef(-rm.playerViewY, 0.0F, 1.0F, 0.0F);
+                        GL11.glRotatef(rm.playerViewX, 1.0F, 0.0F, 0.0F);
 
-                                // GL-состояния
-                                GL11.glDisable(GL11.GL_LIGHTING);
-                                GL11.glDepthMask(false);
-                                GL11.glDisable(GL11.GL_DEPTH_TEST);
-                                GL11.glEnable(GL11.GL_BLEND);
-                                GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+                        // масштаб как в исходнике
+                        final float s = 0.025F * (size * 2.0F);
+                        GL11.glScalef(-s, -s, s);
 
-                                // Вычисляем ширину текста
-                                final int textW = fr.getStringWidth(toRender);
-                                final int textH = fr.FONT_HEIGHT;
+                        // GL-состояния
+                        GL11.glDisable(GL11.GL_LIGHTING);
+                        GL11.glDepthMask(false);
+                        GL11.glDisable(GL11.GL_DEPTH_TEST);
+                        GL11.glEnable(GL11.GL_BLEND);
+                        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
-                                // Фон
-                                GL11.glDisable(GL11.GL_TEXTURE_2D);
-                                GL11.glColor4f(bgCol.x, bgCol.y, bgCol.z, bgCol.w);
-                                final float padX = 2f, padY = 1f;
-                                final float x0 = -textW / 2f - padX;
-                                final float y0 = -padY;
-                                final float x1 = textW / 2f + padX;
-                                final float y1 = textH + padY;
+                        // размеры текста
+                        final int textW = fr.getStringWidth(toRender);
+                        final int textH = fr.FONT_HEIGHT;
 
-                                Tessellator t = Tessellator.instance;
-                                t.startDrawingQuads();
-                                t.addVertex(x0, y0, 0);
-                                t.addVertex(x0, y1, 0);
-                                t.addVertex(x1, y1, 0);
-                                t.addVertex(x1, y0, 0);
-                                t.draw();
+                        // фон
+                        GL11.glDisable(GL11.GL_TEXTURE_2D);
+                        GL11.glColor4f(bgCol.x, bgCol.y, bgCol.z, bgCol.w);
+                        final float padX = 2f, padY = 1f;
+                        final float x0 = -textW / 2f - padX;
+                        final float y0 = -padY;
+                        final float x1 = textW / 2f + padX;
+                        final float y1 = textH + padY;
 
-                                GL11.glEnable(GL11.GL_TEXTURE_2D);
-                                GL11.glColor4f(1f, 1f, 1f, 1f);
+                        Tessellator t = Tessellator.instance;
+                        t.startDrawingQuads();
+                        t.addVertex(x0, y0, 0);
+                        t.addVertex(x0, y1, 0);
+                        t.addVertex(x1, y1, 0);
+                        t.addVertex(x1, y0, 0);
+                        t.draw();
 
-                                // Биндим текстуру шрифта
-                                try {
-                                    java.lang.reflect.Field fLoc = FontRenderer.class
-                                        .getDeclaredField("locationFontTexture");
-                                    fLoc.setAccessible(true);
-                                    ResourceLocation loc = (ResourceLocation) fLoc.get(fr);
-                                    if (loc != null) {
-                                        mc.getTextureManager()
-                                            .bindTexture(loc);
-                                    }
-                                } catch (Throwable ignored) {}
+                        GL11.glEnable(GL11.GL_TEXTURE_2D);
+                        GL11.glColor4f(1f, 1f, 1f, 1f);
 
-                                // Рисуем текст (ванильный FontRenderer)
-                                final float baseX = -textW / 2f;
-                                fr.drawString(toRender, (int)(baseX + 1), 1, 0x80000000); // тень
-                                fr.drawString(toRender, (int)baseX, 0, 0xFFFFFFFF);       // основной
-
-                                // Возврат GL-состояний
-                                GL11.glEnable(GL11.GL_DEPTH_TEST);
-                                GL11.glDepthMask(true);
-                                GL11.glEnable(GL11.GL_LIGHTING);
-                                GL11.glDisable(GL11.GL_BLEND);
-                            } finally {
-                                GL11.glPopMatrix();
+                        // биндим текстуру шрифта (поле 1.7.10)
+                        try {
+                            java.lang.reflect.Field fLoc = FontRenderer.class.getDeclaredField("locationFontTexture");
+                            fLoc.setAccessible(true);
+                            ResourceLocation loc = (ResourceLocation) fLoc.get(fr);
+                            if (loc != null) {
+                                mc.getTextureManager().bindTexture(loc);
                             }
-                        }
+                        } catch (Throwable ignored) {}
+
+                        // сам текст (тень + основной), центрируем как было
+                        final int baseX = -textW / 2;
+                        fr.drawString(toRender, baseX + 1, 1, 0x80000000); // тень
+                        fr.drawString(toRender, baseX, 0, 0xFFFFFFFF);     // белый
+
+                        // возврат GL-состояний
+                        GL11.glEnable(GL11.GL_DEPTH_TEST);
+                        GL11.glDepthMask(true);
+                        GL11.glEnable(GL11.GL_LIGHTING);
+                        GL11.glDisable(GL11.GL_BLEND);
+                    } finally {
+                        GL11.glPopMatrix();
                     }
-                    // === /TravelAnchorFix ===
+                    // ======= /ТОЛЬКО СМЕНА РИСОВАНИЯ ТЕКСТА =======
+
                     GL11.glPopMatrix();
                 }
                 GL11.glPopMatrix();
