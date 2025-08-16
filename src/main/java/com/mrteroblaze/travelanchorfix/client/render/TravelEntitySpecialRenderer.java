@@ -37,7 +37,7 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
         RenderManager rm = RenderManager.instance;
         GL11.glRotatef(-rm.playerViewY, 0.0F, 1.0F, 0.0F);
-        GL11.glRotatef(rm.playerViewX, 1.0F, 0.0F);
+        GL11.glRotatef(rm.playerViewX, 1.0F, 0.0F, 0.0F);
 
         final float s = 0.025F * 2.0F;
         GL11.glScalef(-s, -s, s);
@@ -51,7 +51,7 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
         int textW = fr.getStringWidth(toRender);
         int baseX = -textW / 2;
 
-        // фон
+        // фон рамки
         GL11.glDisable(GL11.GL_TEXTURE_2D);
         RenderUtil.drawQuad2D(baseX - 1, -1, textW + 2, 8, 0x80000000);
         GL11.glEnable(GL11.GL_TEXTURE_2D);
