@@ -1,17 +1,16 @@
 package com.mrteroblaze.travelanchorfix.client.render;
 
+import com.enderio.core.client.render.RenderUtil;
 import crazypants.enderio.EnderIO;
 import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.lwjgl.opengl.GL11;
 import com.gtnewhorizons.angelica.client.font.BatchingFontRenderer;
 
 import java.lang.reflect.Field;
@@ -20,84 +19,88 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
     private static final Logger LOG = LogManager.getLogger("TravelAnchorFix");
 
-    private BatchingFontRenderer bfr = null;
+    private static Object selOverlayIcon;
+    private static Object hlOverlayIcon;
 
-    private static Object selectedOverlayIcon;
-    private static Object highlightOverlayIcon;
-
-    static {
-        try {
-            Class<?> clazz = EnderIO.blockTravelPlatform.getClass();
-            Field f1 = clazz.getDeclaredField("selectedOverlayIcon");
-            f1.setAccessible(true);
-            selectedOverlayIcon = f1.get(EnderIO.blockTravelPlatform);
-
-            Field f2 = clazz.getDeclaredField("highlightOverlayIcon");
-            f2.setAccessible(true);
-            highlightOverlayIcon = f2.get(EnderIO.blockTravelPlatform);
-
-            LOG.info("[TravelAnchorFix] Successfully hooked overlay icons via reflection.");
-        } catch (Exception e) {
-            LOG.error("[TravelAnchorFix] Failed to hook overlay icons", e);
-        }
-    }
+    private final BatchingFontRenderer bfr;
 
     public TravelEntitySpecialRenderer() {
-        super();
+        BatchingFontRenderer tmp = null;
         try {
-            FontRenderer fr = Minecraft.getMinecraft().fontRenderer;
-            // Упрощённый конструктор – твоя версия Angelica может требовать больше аргументов
-            // Если так – вернись к тому месту, где мы создавали bfr через все массивы.
-            bfr = new BatchingFontRenderer(fr, null, null, null, null, (ResourceLocation) null);
-            LOG.info("[TravelAnchorFix] BatchingFontRenderer successfully created!");
+            // Angelica BatchingFontRenderer через рефлексию
+            Class<?> cls = Class.forName("alexiil.mc.mod.angelica.client.render.BatchingFontRenderer");
+            tmp = (BatchingFontRenderer) cls
+                    .getConstructor(FontRenderer.class)
+                    .newInstance(Minecraft.getMinecraft().fontRenderer);
+            LOG.info("[TravelAnchorFix] Successfully hooked into Angelica BatchingFontRenderer");
         } catch (Throwable t) {
-            LOG.warn("[TravelAnchorFix] Failed to init BatchingFontRenderer, will fallback to default FontRenderer", t);
-            bfr = null;
+            LOG.warn("[TravelAnchorFix] Angelica BatchingFontRenderer not available, fallback to vanilla FontRenderer", t);
+        }
+        bfr = tmp;
+
+        try {
+            Class<?> blockCls = Class.forName("crazypants.enderio.teleport.anchor.BlockTravelAnchor");
+            Field f1 = blockCls.getDeclaredField("selectedOverlayIcon");
+            f1.setAccessible(true);
+            selOverlayIcon = f1.get(EnderIO.blockTravelPlatform);
+            Field f2 = blockCls.getDeclaredField("highlightOverlayIcon");
+            f2.setAccessible(true);
+            hlOverlayIcon = f2.get(EnderIO.blockTravelPlatform);
+            LOG.info("[TravelAnchorFix] Successfully hooked overlay icons");
+        } catch (Throwable t) {
+            LOG.error("[TravelAnchorFix] Could not access overlay icons", t);
         }
     }
 
     @Override
     public void renderTileEntityAt(TileEntity te, double x, double y, double z, float partialTicks) {
-        if (!(te instanceof TileTravelAnchor)) {
-            return;
-        }
-
+        if (!(te instanceof TileTravelAnchor)) return;
         TileTravelAnchor anchor = (TileTravelAnchor) te;
+
         String text = anchor.getLabel();
-
-        if (text == null || text.isEmpty()) {
-            return;
-        }
-
-        GL11.glPushMatrix();
-        GL11.glTranslated(x + 0.5, y + 1.5, z + 0.5);
-        GL11.glNormal3f(0.0F, 1.0F, 0.0F);
-        GL11.glRotatef(-RenderManager.instance.playerViewY, 0.0F, 1.0F, 0.0F);
-        GL11.glRotatef(RenderManager.instance.playerViewX, 1.0F, 0.0F, 0.0F);
-        GL11.glScalef(-0.025F, -0.025F, 0.025F);
-
-        GL11.glDisable(GL11.GL_LIGHTING);
-        GL11.glEnable(GL12.GL_RESCALE_NORMAL);
-        GL11.glDisable(GL11.GL_DEPTH_TEST);
+        if (text == null || text.isEmpty()) return;
 
         FontRenderer fr = Minecraft.getMinecraft().fontRenderer;
         int width = fr.getStringWidth(text);
-        int half = width / 2;
 
-        GL11.glTranslatef(-half, 0, 0);
+        GL11.glPushMatrix();
+        GL11.glTranslated(x + 0.5, y + 1.5, z + 0.5);
 
+        // повернуть к камере
+        GL11.glRotatef(-Minecraft.getMinecraft().thePlayer.rotationYaw, 0.0F, 1.0F, 0.0F);
+        GL11.glRotatef(Minecraft.getMinecraft().thePlayer.rotationPitch, 1.0F, 0.0F, 0.0F);
+
+        GL11.glScalef(-0.025F, -0.025F, 0.025F);
+
+        // фон для отладки (черный прямоугольник)
+        GL11.glDisable(GL11.GL_TEXTURE_2D);
+        GL11.glColor4f(0f, 0f, 0f, 0.5f);
+        GL11.glBegin(GL11.GL_QUADS);
+        GL11.glVertex3f(-width / 2f - 2, -2, 0.0f);
+        GL11.glVertex3f(-width / 2f - 2, 10, 0.0f);
+        GL11.glVertex3f(width / 2f + 2, 10, 0.0f);
+        GL11.glVertex3f(width / 2f + 2, -2, 0.0f);
+        GL11.glEnd();
+        GL11.glEnable(GL11.GL_TEXTURE_2D);
+
+        // текст
         if (bfr != null) {
             LOG.info("[TravelAnchorFix] Drawing with BatchingFontRenderer: '{}'", text);
-            bfr.drawString(text, 0, 0, 0xFFFFFFFF, false, false, null, 0, 0);
+            bfr.drawString(0f, 0f, 0xFFFFFFFF, false, false, text, 0, text.length());
         } else {
             LOG.info("[TravelAnchorFix] Drawing with default FontRenderer: '{}'", text);
-            fr.drawString(text, 0, 0, 0xFFFFFFFF);
+            fr.drawString(text, -width / 2, 0, 0xFFFFFFFF);
         }
 
-        GL11.glEnable(GL11.GL_DEPTH_TEST);
-        GL11.glDisable(GL12.GL_RESCALE_NORMAL);
-        GL11.glEnable(GL11.GL_LIGHTING);
-
         GL11.glPopMatrix();
+    }
+
+    // отдаем иконки через reflection
+    public static Object getSelectedOverlayIcon() {
+        return selOverlayIcon;
+    }
+
+    public static Object getHighlightOverlayIcon() {
+        return hlOverlayIcon;
     }
 }
