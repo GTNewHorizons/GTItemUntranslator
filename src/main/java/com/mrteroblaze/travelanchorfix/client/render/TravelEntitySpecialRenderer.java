@@ -25,7 +25,6 @@ import com.enderio.core.common.util.Util;
 import com.enderio.core.common.vecmath.Vector3d;
 import com.enderio.core.common.vecmath.Vector3f;
 import com.enderio.core.common.vecmath.Vector4f;
-import com.gtnewhorizons.angelica.client.font.BatchingFontRenderer;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -60,45 +59,6 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
         }
     }
 
-    private BatchingFontRenderer travelAnchorBFR = null;
-
-    private BatchingFontRenderer ensureTravelAnchorBFR(FontRenderer fr) {
-        if (travelAnchorBFR != null) return travelAnchorBFR;
-        try {
-            // Достаём приватные поля FontRenderer (MCP имена для 1.7.10)
-            java.lang.reflect.Field fGlyphWidth = FontRenderer.class.getDeclaredField("glyphWidth");
-            fGlyphWidth.setAccessible(true);
-            byte[] glyphWidth = (byte[]) fGlyphWidth.get(fr);
-
-            java.lang.reflect.Field fCharWidth = FontRenderer.class.getDeclaredField("charWidth");
-            fCharWidth.setAccessible(true);
-            int[] charWidth = (int[]) fCharWidth.get(fr);
-
-            java.lang.reflect.Field fColorCode = FontRenderer.class.getDeclaredField("colorCode");
-            fColorCode.setAccessible(true);
-            int[] colorCode = (int[]) fColorCode.get(fr);
-
-            java.lang.reflect.Field fUniPages = FontRenderer.class.getDeclaredField("unicodePageLocations");
-            fUniPages.setAccessible(true);
-            ResourceLocation[] unicodePages = (ResourceLocation[]) fUniPages.get(fr);
-
-            java.lang.reflect.Field fLoc = FontRenderer.class.getDeclaredField("locationFontTexture");
-            fLoc.setAccessible(true);
-            ResourceLocation asciiTex = (ResourceLocation) fLoc.get(fr);
-
-            // Сигнатура Angelica 1.7.10:
-            // BatchingFontRenderer(FontRenderer underlying,
-            // ResourceLocation[] unicodePageLocations,
-            // int[] charWidth, byte[] glyphWidth,
-            // int[] colorCode, ResourceLocation locationFontTexture)
-            travelAnchorBFR = new BatchingFontRenderer(fr, unicodePages, charWidth, glyphWidth, colorCode, asciiTex);
-        } catch (Throwable t) {
-            // Без fallback — по твоей просьбе. Если что-то пойдёт не так, просто не рисуем текст.
-            travelAnchorBFR = null;
-        }
-        return travelAnchorBFR;
-    }
-
     private final Vector4f selectedColor;
     private final Vector4f highlightColor;
 
@@ -113,23 +73,10 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
     @Override
     public void renderTileEntityAt(TileEntity tileentity, double x, double y, double z, float f) {
-        if (!TravelController.instance.showTargets()) {
+        if (!(tileentity instanceof ITravelAccessable)) {
             return;
         }
 
-        ITravelAccessable ta = (ITravelAccessable) tileentity;
-
-        if (!ta.isVisible()) {
-            return;
-        }
-
-        BlockCoord onBlock = TravelController.instance.onBlockCoord;
-        if (onBlock != null && onBlock.equals(ta.getLocation())) {
-            return;
-        }
-        if (!ta.canSeeBlock(Minecraft.getMinecraft().thePlayer)) {
-            return;
-        }
         final CubeRenderer cr = CubeRenderer.get();
         final Tessellator tessellator = Tessellator.instance;
 
@@ -174,18 +121,12 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
         tessellator.draw();
 
         tessellator.startDrawingQuads();
-        tessellator.setBrightness(15 << 20 | 15 << 4);
-        if (TravelController.instance.isBlockSelected(bc)) {
-            tessellator.setColorRGBA_F(selectedColor.x, selectedColor.y, selectedColor.z, selectedColor.w);
-            cr.render(BoundingBox.UNIT_CUBE.scale(sf + 0.05, sf + 0.05, sf + 0.05), getSelectedIcon());
-        } else {
-            tessellator.setColorRGBA_F(highlightColor.x, highlightColor.y, highlightColor.z, highlightColor.w);
-            cr.render(BoundingBox.UNIT_CUBE.scale(sf + 0.05, sf + 0.05, sf + 0.05), getHighlightIcon());
-        }
+        renderOverlay(tileentity, sf);
         tessellator.draw();
+
         GL11.glPopMatrix();
 
-        renderLabel(tileentity, x, y, z, ta, sf);
+        renderLabel(tileentity, x, y, z, (ITravelAccessable) tileentity, sf);
 
         GL11.glPopAttrib();
 
@@ -215,34 +156,29 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
                 {
                     GL11.glPushMatrix();
                     GL11.glScalef(globalScale, globalScale, globalScale);
-
-                    {
-                        GL11.glPushMatrix();
-                        if (isBlock) {
-                            GL11.glTranslatef(0f, -0.25f, 0);
-                        } else {
-                            GL11.glTranslatef(0f, -0.5f, 0);
-                        }
-
-                        GL11.glScalef(2, 2, 2);
-
-                        if (ei == null) {
-                            ei = new EntityItem(tileentity.getWorldObj(), x, y, z, itemLabel);
-                        } else {
-                            ei.setEntityItemStack(itemLabel);
-                        }
-                        RenderUtil.render3DItem(ei, false);
-                        GL11.glPopMatrix();
+                    if (!isBlock) {
+                        GL11.glScalef(0.5f, 0.5f, 0.5f);
                     }
+
+                    renderEntity(RenderManager.instance, ei, itemLabel, isBlock, globalScale);
+
                     GL11.glPopMatrix();
                 }
+
+                if (isBlock) {
+                    GL11.glPushMatrix();
+                    GL11.glScalef(globalScale, globalScale, globalScale);
+                    Vector3f pos = new Vector3f(0, -1.2f, 0);
+                    RenderUtil.drawBillboardQuad(pos, 0.4f, 0.4f, EnderIO.blockTravelPlatform.getIcon(0, 0));
+                    GL11.glPopMatrix();
+                }
+
                 GL11.glPopMatrix();
             }
         }
 
         String toRender = ta.getLabel();
-        if (toRender != null && toRender.trim()
-            .length() > 0) {
+        if (toRender != null && toRender.trim().length() > 0) {
             GL11.glColor4f(1, 1, 1, 1);
             Vector4f bgCol = RenderUtil.DEFAULT_TEXT_BG_COL;
             if (TravelController.instance.isBlockSelected(new BlockCoord(tileentity))) {
@@ -257,96 +193,110 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
                     GL11.glScalef(globalScale, globalScale, globalScale);
                     Vector3f pos = new Vector3f(0, 1.2f, 0);
                     float size = 0.5f;
-                    // === TravelAnchorFix: отрисовка текста через Angelica BatchingFontRenderer ===
+                    
+                    // === TravelAnchorFix: отрисовка текста через ванильный FontRenderer ===
                     {
                         final Minecraft mc = Minecraft.getMinecraft();
                         final FontRenderer fr = mc.fontRenderer;
 
-                        // Создаём/берём батчер
-                        final BatchingFontRenderer bfr = ensureTravelAnchorBFR(fr);
-                        if (bfr != null) {
-                            GL11.glPushMatrix();
+                        GL11.glPushMatrix();
+                        try {
+                            // Повороты к камере
+                            RenderManager rm = RenderManager.instance;
+                            RenderUtil.rotateToPlayer();
+
+                            // Масштаб
+                            final float s = 0.025F * (size * 2.0F);
+                            GL11.glScalef(-s, -s, s);
+
+                            // GL-состояния
+                            GL11.glDisable(GL11.GL_LIGHTING);
+                            GL11.glDepthMask(false);
+                            GL11.glDisable(GL11.GL_DEPTH_TEST);
+                            GL11.glEnable(GL11.GL_BLEND);
+                            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+
+                            // Вычисляем ширину/высоту текста
+                            final int textW = fr.getStringWidth(toRender);
+                            final int textH = fr.FONT_HEIGHT;
+
+                            // Фон
+                            GL11.glDisable(GL11.GL_TEXTURE_2D);
+                            GL11.glColor4f(bgCol.x, bgCol.y, bgCol.z, bgCol.w);
+                            final float padX = 2f, padY = 1f;
+                            final float x0 = -textW / 2f - padX;
+                            final float y0 = -padY;
+                            final float x1 =  textW / 2f + padX;
+                            final float y1 =  textH + padY;
+
+                            Tessellator t = Tessellator.instance;
+                            t.startDrawingQuads();
+                            t.addVertex(x0, y0, 0);
+                            t.addVertex(x0, y1, 0);
+                            t.addVertex(x1, y1, 0);
+                            t.addVertex(x1, y0, 0);
+                            t.draw();
+
+                            GL11.glEnable(GL11.GL_TEXTURE_2D);
+                            GL11.glColor4f(1f, 1f, 1f, 1f);
+
+                            // Биндим текстуру шрифта (на всякий случай)
                             try {
-                                // pos = (0, 1.2f, 0) как в оригинале
-                                GL11.glTranslatef(pos.x, pos.y, pos.z);
+                                java.lang.reflect.Field fLoc = FontRenderer.class.getDeclaredField("locationFontTexture");
+                                fLoc.setAccessible(true);
+                                ResourceLocation loc = (ResourceLocation) fLoc.get(fr);
+                                if (loc != null) {
+                                    mc.getTextureManager().bindTexture(loc);
+                                }
+                            } catch (Throwable ignored) {}
 
-                                // Billboard к камере
-                                RenderManager rm = RenderManager.instance;
-                                GL11.glRotatef(-rm.playerViewY, 0.0F, 1.0F, 0.0F);
-                                GL11.glRotatef(rm.playerViewX, 1.0F, 0.0F, 0.0F);
+                            // Тень + текст
+                            final int baseX = -textW / 2;
+                            fr.drawString(toRender, baseX + 1, 1, 0x80000000);
+                            fr.drawString(toRender, baseX, 0, 0xFFFFFFFF);
 
-                                // Масштаб
-                                final float s = 0.025F * (size * 2.0F);
-                                GL11.glScalef(-s, -s, s);
-
-                                // GL-состояния
-                                GL11.glDisable(GL11.GL_LIGHTING);
-                                GL11.glDepthMask(false);
-                                GL11.glDisable(GL11.GL_DEPTH_TEST);
-                                GL11.glEnable(GL11.GL_BLEND);
-                                GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-
-                                // Вычисляем ширину текста
-                                final int textW = fr.getStringWidth(toRender);
-                                final int textH = fr.FONT_HEIGHT;
-
-                                // Фон
-                                GL11.glDisable(GL11.GL_TEXTURE_2D);
-                                GL11.glColor4f(bgCol.x, bgCol.y, bgCol.z, bgCol.w);
-                                final float padX = 2f, padY = 1f;
-                                final float x0 = -textW / 2f - padX;
-                                final float y0 = -padY;
-                                final float x1 = textW / 2f + padX;
-                                final float y1 = textH + padY;
-
-                                Tessellator t = Tessellator.instance;
-                                t.startDrawingQuads();
-                                t.addVertex(x0, y0, 0);
-                                t.addVertex(x0, y1, 0);
-                                t.addVertex(x1, y1, 0);
-                                t.addVertex(x1, y0, 0);
-                                t.draw();
-
-                                GL11.glEnable(GL11.GL_TEXTURE_2D);
-                                GL11.glColor4f(1f, 1f, 1f, 1f);
-
-                                // Биндим текстуру шрифта
-                                try {
-                                    java.lang.reflect.Field fLoc = FontRenderer.class
-                                        .getDeclaredField("locationFontTexture");
-                                    fLoc.setAccessible(true);
-                                    ResourceLocation loc = (ResourceLocation) fLoc.get(fr);
-                                    if (loc != null) {
-                                        mc.getTextureManager()
-                                            .bindTexture(loc);
-                                    }
-                                } catch (Throwable ignored) {}
-
-                                // Рисуем текст батчером (с тенью и без)
-                                final float baseX = -textW / 2f;
-                                bfr.drawString(baseX + 1, 1, 0x80000000, false, false, toRender, 0, toRender.length()); // тень
-                                bfr.drawString(baseX, 0, 0xFFFFFFFF, false, false, toRender, 0, toRender.length()); // основной
-
-                                // Возврат GL-состояний
-                                GL11.glEnable(GL11.GL_DEPTH_TEST);
-                                GL11.glDepthMask(true);
-                                GL11.glEnable(GL11.GL_LIGHTING);
-                                GL11.glDisable(GL11.GL_BLEND);
-                            } finally {
-                                GL11.glPopMatrix();
-                            }
+                            // Возврат GL-состояний
+                            GL11.glEnable(GL11.GL_DEPTH_TEST);
+                            GL11.glDepthMask(true);
+                            GL11.glEnable(GL11.GL_LIGHTING);
+                            GL11.glDisable(GL11.GL_BLEND);
+                        } finally {
+                            GL11.glPopMatrix();
                         }
                     }
                     // === /TravelAnchorFix ===
                     GL11.glPopMatrix();
                 }
+
                 GL11.glPopMatrix();
             }
         }
     }
 
-    protected void renderBlock(IBlockAccess world, double sf) {
-        Tessellator.instance.setColorRGBA_F(1, 1, 1, 0.75f);
+    private void renderOverlay(TileEntity tileentity, double sf) {
+        Tessellator tessellator = Tessellator.instance;
+
+        Vector4f col = getSelectedColor();
+        IIcon icon = getSelectedIcon();
+        BlockCoord bc = new BlockCoord(tileentity);
+        if (TravelController.instance.isBlockSelected(bc)) {
+            GL11.glColor4f(col.x, col.y, col.z, col.w);
+            RenderUtil.addVerticesToTessellator(BoundingBox.UNIT_CUBE.scale(sf, sf, sf), icon);
+            GL11.glColor4f(1, 1, 1, 1);
+        }
+
+        col = getHighlightColor();
+        icon = getHighlightIcon();
+        if (TravelController.instance.isBlockHighlighted(bc)) {
+            GL11.glColor4f(col.x, col.y, col.z, col.w);
+            RenderUtil.addVerticesToTessellator(BoundingBox.UNIT_CUBE.scale(sf, sf, sf), icon);
+            GL11.glColor4f(1, 1, 1, 1);
+        }
+    }
+
+    private void renderBlock(IBlockAccess ba, double sf) {
+        GL11.glColor4f(1, 1, 1, 1);
+        RenderUtil.setColorRGBA_F(1, 1, 1, 0.75f);
         CubeRenderer.get()
             .render(BoundingBox.UNIT_CUBE.scale(sf, sf, sf), EnderIO.blockTravelPlatform.getIcon(0, 0));
     }
