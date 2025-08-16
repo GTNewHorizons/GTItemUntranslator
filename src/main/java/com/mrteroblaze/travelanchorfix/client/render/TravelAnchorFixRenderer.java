@@ -1,12 +1,8 @@
 package com.mrteroblaze.travelanchorfix.client.render;
 
-import com.enderio.core.common.util.BlockCoord;
-import com.gtnewhorizons.angelica.client.font.BatchingFontRenderer;
-import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import crazypants.enderio.teleport.anchor.TileTravelAnchor;
-import crazypants.enderio.teleport.TravelController;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.Tessellator;
@@ -14,10 +10,16 @@ import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
+
 import org.lwjgl.opengl.GL11;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import com.gtnewhorizons.angelica.client.font.BatchingFontRenderer;
+
+import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import crazypants.enderio.teleport.TravelController;
+import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 
 @SideOnly(Side.CLIENT)
 public class TravelAnchorFixRenderer extends TileEntitySpecialRenderer {
@@ -26,7 +28,7 @@ public class TravelAnchorFixRenderer extends TileEntitySpecialRenderer {
     private static final float LABEL_Y_OFFSET = 1.2f;
     private static final float SCALE = 0.025f; // базовый масштабирующий множитель
     private static final float BG_R = 0f, BG_G = 0f, BG_B = 0f, BG_A = 0.40f;
-    private static final int TEXT_COLOR  = 0xFFFFFFFF;  // белый (ARGB)
+    private static final int TEXT_COLOR = 0xFFFFFFFF; // белый (ARGB)
     private static final int SHADOW_COLOR = 0x80000000; // чёрный с ~50% альфой
 
     private BatchingFontRenderer batched; // ленивый батчер из Angelica
@@ -77,7 +79,8 @@ public class TravelAnchorFixRenderer extends TileEntitySpecialRenderer {
 
         // Пока оставляем заглушку, как ты просил
         String label = "Travel Anchor";
-        if (label == null || label.trim().isEmpty()) return;
+        if (label == null || label.trim()
+            .isEmpty()) return;
 
         Minecraft mc = Minecraft.getMinecraft();
         FontRenderer fr = mc.fontRenderer;
@@ -127,8 +130,7 @@ public class TravelAnchorFixRenderer extends TileEntitySpecialRenderer {
     private void drawBackgroundQuad(TileTravelAnchor anchor, int textW, int textH) {
         float alpha = BG_A;
         try {
-            if (TravelController.instance.isBlockSelected(
-                    new com.enderio.core.common.util.BlockCoord(anchor))) {
+            if (TravelController.instance.isBlockSelected(new com.enderio.core.common.util.BlockCoord(anchor))) {
                 alpha = Math.min(0.85f, BG_A + 0.30f);
             }
         } catch (Throwable ignored) {}
@@ -160,7 +162,8 @@ public class TravelAnchorFixRenderer extends TileEntitySpecialRenderer {
             fLoc.setAccessible(true);
             ResourceLocation loc = (ResourceLocation) fLoc.get(fr);
             if (loc != null) {
-                mc.getTextureManager().bindTexture(loc);
+                mc.getTextureManager()
+                    .bindTexture(loc);
                 return;
             }
         } catch (Throwable ignored) {}
@@ -170,7 +173,8 @@ public class TravelAnchorFixRenderer extends TileEntitySpecialRenderer {
     private int getStringWidthReflective(BatchingFontRenderer bfr, FontRenderer fr, String s) {
         if (bfr != null) {
             try {
-                Method m = bfr.getClass().getMethod("getStringWidth", String.class);
+                Method m = bfr.getClass()
+                    .getMethod("getStringWidth", String.class);
                 Object res = m.invoke(bfr, s);
                 if (res instanceof Integer) return (Integer) res;
             } catch (Throwable ignored) {}
@@ -178,25 +182,25 @@ public class TravelAnchorFixRenderer extends TileEntitySpecialRenderer {
         return fr.getStringWidth(s);
     }
 
-    private void drawStringReflective(BatchingFontRenderer bfr, FontRenderer fr,
-                                      String s, int color, int offX, int offY) {
+    private void drawStringReflective(BatchingFontRenderer bfr, FontRenderer fr, String s, int color, int offX,
+        int offY) {
         // Пробуем batched: (String,float,float,int,boolean) или (String,int,int,int,boolean) или (String,int,int,int)
         if (bfr != null) {
             try {
-                Method m = bfr.getClass().getMethod("drawString",
-                        String.class, float.class, float.class, int.class, boolean.class);
+                Method m = bfr.getClass()
+                    .getMethod("drawString", String.class, float.class, float.class, int.class, boolean.class);
                 m.invoke(bfr, s, (float) offX, (float) offY, color, false);
                 return;
             } catch (Throwable ignored) {}
             try {
-                Method m = bfr.getClass().getMethod("drawString",
-                        String.class, int.class, int.class, int.class, boolean.class);
+                Method m = bfr.getClass()
+                    .getMethod("drawString", String.class, int.class, int.class, int.class, boolean.class);
                 m.invoke(bfr, s, offX, offY, color, false);
                 return;
             } catch (Throwable ignored) {}
             try {
-                Method m = bfr.getClass().getMethod("drawString",
-                        String.class, int.class, int.class, int.class);
+                Method m = bfr.getClass()
+                    .getMethod("drawString", String.class, int.class, int.class, int.class);
                 m.invoke(bfr, s, offX, offY, color);
                 return;
             } catch (Throwable ignored) {}
