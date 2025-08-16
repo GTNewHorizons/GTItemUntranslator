@@ -1,7 +1,6 @@
 package com.mrteroblaze.travelanchorfix.client.render;
 
 import com.enderio.core.client.render.BoundingBox;
-import com.enderio.core.common.vecmath.Vector3f;
 import com.enderio.core.common.vecmath.Vector4f;
 import crazypants.enderio.EnderIO;
 import crazypants.enderio.teleport.anchor.TileTravelAnchor;
@@ -37,6 +36,7 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
             selectedOverlayIconField.setAccessible(true);
             highlightOverlayIconField = clazz.getDeclaredField("highlightOverlayIcon");
             highlightOverlayIconField.setAccessible(true);
+            LOG.info("[TravelAnchorFix] Рефлексия: нашли поля selectedOverlayIcon и highlightOverlayIcon");
         } catch (Exception e) {
             LOG.error("[TravelAnchorFix] Не удалось получить ссылки на иконки через рефлексию", e);
         }
@@ -62,7 +62,7 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
         }
 
         TileTravelAnchor anchor = (TileTravelAnchor) te;
-        LOG.info("[TravelAnchorFix] renderTileEntityAt anchor={} at {}, {}, {}", anchor.getLabel(), x, y, z);
+        LOG.info("[TravelAnchorFix] renderTileEntityAt anchor='{}' at {}, {}, {}", anchor.getLabel(), x, y, z);
 
         renderBlockOverlay(anchor, x, y, z);
         renderLabelAlways(anchor, x, y, z);
@@ -71,9 +71,11 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
     private void renderBlockOverlay(TileTravelAnchor anchor, double x, double y, double z) {
         IIcon icon = getSelectedOverlayIcon();
         if (icon == null) {
-            LOG.debug("[TravelAnchorFix] Нет иконки для overlay");
+            LOG.debug("[TravelAnchorFix] Нет иконки для overlay (selectedOverlayIcon = null)");
             return;
         }
+
+        LOG.info("[TravelAnchorFix] Рисуем overlay у '{}'", anchor.getLabel());
 
         BoundingBox bb = new BoundingBox(anchor.xCoord, anchor.yCoord, anchor.zCoord,
                 anchor.xCoord + 1, anchor.yCoord + 1, anchor.zCoord + 1);
@@ -135,7 +137,9 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
     private IIcon getSelectedOverlayIcon() {
         try {
-            return (IIcon) selectedOverlayIconField.get(EnderIO.blockTravelPlatform);
+            Object value = selectedOverlayIconField.get(EnderIO.blockTravelPlatform);
+            LOG.debug("[TravelAnchorFix] getSelectedOverlayIcon() = {}", value);
+            return (IIcon) value;
         } catch (Exception e) {
             LOG.error("[TravelAnchorFix] Не удалось получить selectedOverlayIcon", e);
             return null;
@@ -144,7 +148,9 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
     private IIcon getHighlightOverlayIcon() {
         try {
-            return (IIcon) highlightOverlayIconField.get(EnderIO.blockTravelPlatform);
+            Object value = highlightOverlayIconField.get(EnderIO.blockTravelPlatform);
+            LOG.debug("[TravelAnchorFix] getHighlightOverlayIcon() = {}", value);
+            return (IIcon) value;
         } catch (Exception e) {
             LOG.error("[TravelAnchorFix] Не удалось получить highlightOverlayIcon", e);
             return null;
