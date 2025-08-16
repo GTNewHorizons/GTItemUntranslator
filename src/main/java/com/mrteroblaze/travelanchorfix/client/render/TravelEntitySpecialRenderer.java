@@ -50,7 +50,6 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
     @Override
     public void renderTileEntityAt(TileEntity tileentity, double x, double y, double z, float f) {
-        LOG.info("[TravelAnchorFix] Rendering anchor at {}, {}, {}", x, y, z);
         if (!TravelController.instance.showTargets()) {
         LOG.info("[TravelAnchorFix] Rendering anchor at {}, {}, {}", x, y, z);
             return;
@@ -59,17 +58,14 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
         ITravelAccessable ta = (ITravelAccessable) tileentity;
 
         if (!ta.isVisible()) {
-        LOG.info("[TravelAnchorFix] Rendering anchor at {}, {}, {}", x, y, z);
             return;
         }
 
         BlockCoord onBlock = TravelController.instance.onBlockCoord;
         if (onBlock != null && onBlock.equals(ta.getLocation())) {
-        LOG.info("[TravelAnchorFix] Rendering anchor at {}, {}, {}", x, y, z);
             return;
         }
         if (!ta.canSeeBlock(Minecraft.getMinecraft().thePlayer)) {
-        LOG.info("[TravelAnchorFix] Rendering anchor at {}, {}, {}", x, y, z);
             return;
         }
         final CubeRenderer cr = CubeRenderer.get();
@@ -81,11 +77,9 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
         TravelSource source = TravelController.instance
                 .getTravelItemTravelSource(Minecraft.getMinecraft().thePlayer, false);
         if (source != null) {
-        LOG.info("[TravelAnchorFix] Rendering anchor at {}, {}, {}", x, y, z);
             maxDistance = source.getMaxDistanceTravelledSq();
         }
         if (eye.distanceSquared(loc) > maxDistance) {
-        LOG.info("[TravelAnchorFix] Rendering anchor at {}, {}, {}", x, y, z);
             return;
         }
 
@@ -120,11 +114,9 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
         tessellator.startDrawingQuads();
         tessellator.setBrightness(15 << 20 | 15 << 4);
         if (TravelController.instance.isBlockSelected(bc)) {
-        LOG.info("[TravelAnchorFix] Rendering anchor at {}, {}, {}", x, y, z);
             tessellator.setColorRGBA_F(selectedColor.x, selectedColor.y, selectedColor.z, selectedColor.w);
             cr.render(BoundingBox.UNIT_CUBE.scale(sf + 0.05, sf + 0.05, sf + 0.05), getSelectedIcon());
         } else {
-        LOG.info("[TravelAnchorFix] Rendering anchor at {}, {}, {}", x, y, z);
             tessellator.setColorRGBA_F(highlightColor.x, highlightColor.y, highlightColor.z, highlightColor.w);
             cr.render(BoundingBox.UNIT_CUBE.scale(sf + 0.05, sf + 0.05, sf + 0.05), getHighlightIcon());
         }
@@ -141,11 +133,9 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
     private EntityItem ei;
 
     private void renderLabel(TileEntity tileentity, double x, double y, double z, ITravelAccessable ta, double sf) {
-        LOG.info("[TravelAnchorFix] Rendering anchor at {}, {}, {}", x, y, z);
         float globalScale = (float) sf;
         ItemStack itemLabel = ta.getItemLabel();
         if (itemLabel != null && itemLabel.getItem() != null) {
-        LOG.info("[TravelAnchorFix] Rendering anchor at {}, {}, {}", x, y, z);
 
             boolean isBlock = itemLabel.getItem() instanceof ItemBlock;
 
@@ -154,37 +144,29 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
             GL14.glBlendColor(col, col, col, col);
             GL11.glColor4f(1, 1, 1, 1);
             {
-        LOG.info("[TravelAnchorFix] Rendering anchor at {}, {}, {}", x, y, z);
                 GL11.glPushMatrix();
                 GL11.glTranslatef((float) x + 0.5f, (float) y + 0.5f, (float) z + 0.5f);
                 if (!isBlock && Minecraft.getMinecraft().gameSettings.fancyGraphics) {
-        LOG.info("[TravelAnchorFix] Rendering anchor at {}, {}, {}", x, y, z);
                     RenderUtil.rotateToPlayer();
                 }
 
                 {
-        LOG.info("[TravelAnchorFix] Rendering anchor at {}, {}, {}", x, y, z);
                     GL11.glPushMatrix();
                     GL11.glScalef(globalScale, globalScale, globalScale);
 
                     {
-        LOG.info("[TravelAnchorFix] Rendering anchor at {}, {}, {}", x, y, z);
                         GL11.glPushMatrix();
                         if (isBlock) {
-        LOG.info("[TravelAnchorFix] Rendering anchor at {}, {}, {}", x, y, z);
                             GL11.glTranslatef(0f, -0.25f, 0);
                         } else {
-        LOG.info("[TravelAnchorFix] Rendering anchor at {}, {}, {}", x, y, z);
                             GL11.glTranslatef(0f, -0.5f, 0);
                         }
 
                         GL11.glScalef(2, 2, 2);
 
                         if (ei == null) {
-        LOG.info("[TravelAnchorFix] Rendering anchor at {}, {}, {}", x, y, z);
                             ei = new EntityItem(tileentity.getWorldObj(), x, y, z, itemLabel);
                         } else {
-        LOG.info("[TravelAnchorFix] Rendering anchor at {}, {}, {}", x, y, z);
                             ei.setEntityItemStack(itemLabel);
                         }
                         RenderUtil.render3DItem(ei, false);
@@ -198,20 +180,16 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
         String toRender = ta.getLabel();
         if (toRender != null && toRender.trim().length() > 0) {
-        LOG.info("[TravelAnchorFix] Rendering anchor at {}, {}, {}", x, y, z);
             GL11.glColor4f(1, 1, 1, 1);
             Vector4f bgCol = RenderUtil.DEFAULT_TEXT_BG_COL;
             if (TravelController.instance.isBlockSelected(new BlockCoord(tileentity))) {
-        LOG.info("[TravelAnchorFix] Rendering anchor at {}, {}, {}", x, y, z);
                 bgCol = new Vector4f(selectedColor.x, selectedColor.y, selectedColor.z, selectedColor.w);
             }
 
             {
-        LOG.info("[TravelAnchorFix] Rendering anchor at {}, {}, {}", x, y, z);
                 GL11.glPushMatrix();
                 GL11.glTranslatef((float) x + 0.5f, (float) y + 0.5f, (float) z + 0.5f);
                 {
-        LOG.info("[TravelAnchorFix] Rendering anchor at {}, {}, {}", x, y, z);
                     GL11.glPushMatrix();
                     GL11.glScalef(globalScale, globalScale, globalScale);
                     Vector3f pos = new Vector3f(0, 1.2f, 0);
@@ -225,28 +203,23 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
     }
 
     protected void renderBlock(IBlockAccess world, double sf) {
-        LOG.info("[TravelAnchorFix] Rendering anchor at {}, {}, {}", x, y, z);
         Tessellator.instance.setColorRGBA_F(1, 1, 1, 0.75f);
         CubeRenderer.get().render(BoundingBox.UNIT_CUBE.scale(sf, sf, sf), EnderIO.blockTravelPlatform.getIcon(0, 0));
     }
 
     public Vector4f getSelectedColor() {
-        LOG.info("[TravelAnchorFix] Rendering anchor at {}, {}, {}", x, y, z);
         return selectedColor;
     }
 
     public IIcon getSelectedIcon() {
-        LOG.info("[TravelAnchorFix] Rendering anchor at {}, {}, {}", x, y, z);
         return EnderIO.blockTravelPlatform.selectedOverlayIcon;
     }
 
     public Vector4f getHighlightColor() {
-        LOG.info("[TravelAnchorFix] Rendering anchor at {}, {}, {}", x, y, z);
         return highlightColor;
     }
 
     public IIcon getHighlightIcon() {
-        LOG.info("[TravelAnchorFix] Rendering anchor at {}, {}, {}", x, y, z);
         return EnderIO.blockTravelPlatform.highlightOverlayIcon;
     }
 }
