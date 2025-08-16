@@ -54,7 +54,7 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
         TileTravelAnchor anchor = (TileTravelAnchor) te;
         Minecraft mc = Minecraft.getMinecraft();
         EntityPlayer player = mc.thePlayer;
-        TravelController tc = TravelController.instance();
+        TravelController tc = TravelController.instance;
 
         if (player == null) {
             return;
