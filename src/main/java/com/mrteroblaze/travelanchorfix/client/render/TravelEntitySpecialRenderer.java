@@ -48,6 +48,17 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
         return null;
     }
 }
+
+	private static IIcon getHighlightOverlayIcon() {
+    try {
+        java.lang.reflect.Field f = BlockTravelAnchor.class.getDeclaredField("highlightOverlayIcon");
+        f.setAccessible(true);
+        return (IIcon) f.get(EnderIO.blockTravelPlatform);
+    } catch (Throwable t) {
+        t.printStackTrace();
+        return null;
+    }
+}
 	
 	private BatchingFontRenderer travelAnchorBFR = null;
 
@@ -348,6 +359,6 @@ private BatchingFontRenderer ensureTravelAnchorBFR(FontRenderer fr) {
     }
 
     public IIcon getHighlightIcon() {
-        return EnderIO.blockTravelPlatform.highlightOverlayIcon;
+        return getHighlightOverlayIcon();
     }
 }
