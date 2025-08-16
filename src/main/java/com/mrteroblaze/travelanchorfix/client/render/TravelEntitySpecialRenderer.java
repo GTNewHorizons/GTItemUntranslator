@@ -1,20 +1,18 @@
 package com.mrteroblaze.travelanchorfix.client.render;
 
+import com.enderio.core.client.render.RenderUtil;
+import com.enderio.core.common.vecmath.Vector3d;
+import crazypants.enderio.EnderIO;
+import crazypants.enderio.machine.travel.BlockTravelAnchor;
+import crazypants.enderio.machine.travel.TileTravelAnchor;
+import cpw.mods.fml.client.registry.ClientRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIcon;
-
 import org.lwjgl.opengl.GL11;
-
-import com.enderio.core.common.vecmath.Vector3d;
-
-import cpw.mods.fml.client.registry.ClientRegistry;
-import crazypants.enderio.EnderIO;
-import crazypants.enderio.teleport.anchor.BlockTravelAnchor;
-import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 
 public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
@@ -60,7 +58,18 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
             int textW = fr.getStringWidth(toRender);
             int baseX = -textW / 2;
 
-            // белый текст
+            // фон-подложка (как в оригинале EnderIO)
+            GL11.glDisable(GL11.GL_TEXTURE_2D);
+            GL11.glBegin(GL11.GL_QUADS);
+            GL11.glColor4f(0.0F, 0.0F, 0.0F, 0.25F);
+            GL11.glVertex3f(baseX - 2, -1, 0.0F);
+            GL11.glVertex3f(baseX - 2, 8, 0.0F);
+            GL11.glVertex3f(baseX + textW + 2, 8, 0.0F);
+            GL11.glVertex3f(baseX + textW + 2, -1, 0.0F);
+            GL11.glEnd();
+            GL11.glEnable(GL11.GL_TEXTURE_2D);
+
+            // сам текст
             fr.drawString(toRender, baseX, 0, 0xFFFFFFFF);
 
             GL11.glEnable(GL11.GL_DEPTH_TEST);
