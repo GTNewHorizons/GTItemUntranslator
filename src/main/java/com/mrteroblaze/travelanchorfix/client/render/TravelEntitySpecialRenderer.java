@@ -1,19 +1,20 @@
 package com.mrteroblaze.travelanchorfix.client.render;
 
-import com.enderio.core.client.render.RenderUtil;
-import crazypants.enderio.EnderIO;
-import crazypants.enderio.teleport.anchor.TileTravelAnchor;
+import java.lang.reflect.Field;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ResourceLocation;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL11;
+
 import com.gtnewhorizons.angelica.client.font.BatchingFontRenderer;
 
-import java.lang.reflect.Field;
+import crazypants.enderio.EnderIO;
+import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 
 public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
@@ -29,12 +30,13 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
         try {
             // Angelica BatchingFontRenderer через рефлексию
             Class<?> cls = Class.forName("alexiil.mc.mod.angelica.client.render.BatchingFontRenderer");
-            tmp = (BatchingFontRenderer) cls
-                    .getConstructor(FontRenderer.class)
-                    .newInstance(Minecraft.getMinecraft().fontRenderer);
+            tmp = (BatchingFontRenderer) cls.getConstructor(FontRenderer.class)
+                .newInstance(Minecraft.getMinecraft().fontRenderer);
             LOG.info("[TravelAnchorFix] Successfully hooked into Angelica BatchingFontRenderer");
         } catch (Throwable t) {
-            LOG.warn("[TravelAnchorFix] Angelica BatchingFontRenderer not available, fallback to vanilla FontRenderer", t);
+            LOG.warn(
+                "[TravelAnchorFix] Angelica BatchingFontRenderer not available, fallback to vanilla FontRenderer",
+                t);
         }
         bfr = tmp;
 
