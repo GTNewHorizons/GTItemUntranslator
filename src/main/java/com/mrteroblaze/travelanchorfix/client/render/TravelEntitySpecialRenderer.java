@@ -241,7 +241,6 @@ private BatchingFontRenderer ensureTravelAnchorBFR(FontRenderer fr) {
     // Создаём/берём батчер
     final BatchingFontRenderer bfr = ensureTravelAnchorBFR(fr);
     if (bfr != null) {
-        // Локальная матрица относительно текущей (мы уже в центре блока и под globalScale)
         GL11.glPushMatrix();
         try {
             // pos = (0, 1.2f, 0) как в оригинале
@@ -252,22 +251,22 @@ private BatchingFontRenderer ensureTravelAnchorBFR(FontRenderer fr) {
             GL11.glRotatef(-rm.playerViewY, 0.0F, 1.0F, 0.0F);
             GL11.glRotatef(rm.playerViewX, 1.0F, 0.0F, 0.0F);
 
-            // Масштаб: в TESR обычно ~0.025; учитываем size из оригинала
+            // Масштаб
             final float s = 0.025F * (size * 2.0F);
-            GL11.glScalef(-s, -s, s); // отрицательный X/Y — чтобы текст стоял "как в GUI"
+            GL11.glScalef(-s, -s, s);
 
-            // GL-состояния как у ванильных надписей
+            // GL-состояния
             GL11.glDisable(GL11.GL_LIGHTING);
             GL11.glDepthMask(false);
             GL11.glDisable(GL11.GL_DEPTH_TEST);
             GL11.glEnable(GL11.GL_BLEND);
             GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
-            // Ширина и высота текста считаем через обычный FontRenderer
+            // Вычисляем ширину текста
             final int textW = fr.getStringWidth(toRender);
             final int textH = fr.FONT_HEIGHT;
 
-            // Фон (прямоугольник с альфой из bgCol)
+            // Фон
             GL11.glDisable(GL11.GL_TEXTURE_2D);
             GL11.glColor4f(bgCol.x, bgCol.y, bgCol.z, bgCol.w);
             final float padX = 2f, padY = 1f;
@@ -287,7 +286,7 @@ private BatchingFontRenderer ensureTravelAnchorBFR(FontRenderer fr) {
             GL11.glEnable(GL11.GL_TEXTURE_2D);
             GL11.glColor4f(1f, 1f, 1f, 1f);
 
-            // Принудительно биндим текстуру шрифта — анти-"квадраты" под шейдерами
+            // Биндим текстуру шрифта
             try {
                 java.lang.reflect.Field fLoc = FontRenderer.class.getDeclaredField("locationFontTexture");
                 fLoc.setAccessible(true);
@@ -297,10 +296,10 @@ private BatchingFontRenderer ensureTravelAnchorBFR(FontRenderer fr) {
                 }
             } catch (Throwable ignored) {}
 
-            // Рисуем тень и основной текст (батчером)
-            final int baseX = -textW / 2;
-            bfr.drawString(toRender, baseX + 1, 1, 0x80000000, false); // тень
-            bfr.drawString(toRender, baseX, 0, 0xFFFFFFFF, false);     // основной
+            // Рисуем текст батчером (с тенью и без)
+            final float baseX = -textW / 2f;
+            bfr.drawString(baseX + 1, 1, 0x80000000, false, false, toRender, 0, toRender.length()); // тень
+            bfr.drawString(baseX, 0, 0xFFFFFFFF, false, false, toRender, 0, toRender.length());     // основной
 
             // Возврат GL-состояний
             GL11.glEnable(GL11.GL_DEPTH_TEST);
@@ -311,7 +310,6 @@ private BatchingFontRenderer ensureTravelAnchorBFR(FontRenderer fr) {
             GL11.glPopMatrix();
         }
     }
-    // Если bfr == null — по твоей просьбе не делаем fallback; текста не будет
 }
 // === /TravelAnchorFix ===
                     GL11.glPopMatrix();
