@@ -39,4 +39,5 @@ dependencies {
 	compile files("libs/endercore-0.4.8-dev.jar")
 	compile files("libs/angelica-1.0.0-beta49-dev.jar")
 	compile files("libs/chisel-2.16.5-GTNH-dev.jar")
+	compile files("libs/CoFHCore-[1.7.10]3.1.4-329.jar")
 }
