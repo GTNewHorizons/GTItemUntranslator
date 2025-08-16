@@ -1,5 +1,6 @@
 package com.mrteroblaze.travelanchorfix.client.render;
 
+import com.gtnewhorizons.angelica.client.font.BatchingFontRenderer;
 import com.enderio.core.client.render.RenderUtil;
 import crazypants.enderio.EnderIO;
 import crazypants.enderio.teleport.anchor.TileTravelAnchor;
