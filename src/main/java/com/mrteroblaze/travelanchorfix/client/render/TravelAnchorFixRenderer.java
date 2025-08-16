@@ -1,41 +1,43 @@
 package com.mrteroblaze.travelanchorfix.client.render;
 
-import com.enderio.core.client.render.RenderUtil;
 import com.gtnewhorizons.angelica.client.font.BatchingFontRenderer;
-import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import crazypants.enderio.teleport.anchor.TileTravelAnchor;
+import crazypants.enderio.teleport.TravelController;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.util.vector.Vector3f;
-import org.lwjgl.util.vector.Vector4f;
+import org.lwjgl.opengl.GL11;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
+@SideOnly(Side.CLIENT)
 public class TravelAnchorFixRenderer extends TileEntitySpecialRenderer {
 
-    private BatchingFontRenderer batched;
+    // Параметры отображения
+    private static final float LABEL_Y_OFFSET = 1.2f;
+    private static final float SCALE = 0.025f; // базовый масштабирующий множитель
+    private static final float BG_R = 0f, BG_G = 0f, BG_B = 0f, BG_A = 0.40f;
+    private static final int TEXT_COLOR  = 0xFFFFFFFF;  // белый (ARGB)
+    private static final int SHADOW_COLOR = 0x80000000; // чёрный с ~50% альфой
 
-    public static void register() {
-        try {
-            @SuppressWarnings("unchecked")
-            Class<? extends TileEntity> teClass =
-                    (Class<? extends TileEntity>) Class.forName("crazypants.enderio.teleport.anchor.TileTravelAnchor");
-            ClientRegistry.bindTileEntitySpecialRenderer(teClass, new TravelAnchorFixRenderer());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+    private BatchingFontRenderer batched; // ленивый батчер из Angelica
 
-    private BatchingFontRenderer getBatchedFontRenderer() {
+    private BatchingFontRenderer ensureBatched() {
         if (batched != null) return batched;
         if (!Loader.isModLoaded("angelica")) return null;
         try {
             Minecraft mc = Minecraft.getMinecraft();
             FontRenderer fr = mc.fontRenderer;
 
+            // Достаём нужные поля FontRenderer (1.7.10) через рефлексию
             Field fGlyphWidth = FontRenderer.class.getDeclaredField("glyphWidth");
             fGlyphWidth.setAccessible(true);
             byte[] glyphWidth = (byte[]) fGlyphWidth.get(fr);
@@ -54,50 +56,141 @@ public class TravelAnchorFixRenderer extends TileEntitySpecialRenderer {
 
             Field fLoc = FontRenderer.class.getDeclaredField("locationFontTexture");
             fLoc.setAccessible(true);
-            ResourceLocation fontTex = (ResourceLocation) fLoc.get(fr);
+            ResourceLocation asciiTex = (ResourceLocation) fLoc.get(fr);
 
-            batched = new BatchingFontRenderer(fr, unicodePages, charWidth, glyphWidth, colorCode, fontTex);
+            // Сигнатура из твоей ошибки: (FontRenderer, ResourceLocation[], int[], byte[], int[], ResourceLocation)
+            batched = new BatchingFontRenderer(fr, unicodePages, charWidth, glyphWidth, colorCode, asciiTex);
             return batched;
         } catch (Throwable t) {
-            t.printStackTrace();
+            // Если что-то не так — просто работаем без Angelica батчера
             return null;
         }
     }
 
     @Override
     public void renderTileEntityAt(TileEntity te, double x, double y, double z, float partialTicks) {
-        if (te == null) return;
+        if (!(te instanceof TileTravelAnchor)) return;
+        TileTravelAnchor anchor = (TileTravelAnchor) te;
+
+        if (!anchor.isVisible()) return;
+
+        // Пока оставляем заглушку, как ты просил
+        String label = "Travel Anchor";
+        if (label == null || label.trim().isEmpty()) return;
 
         Minecraft mc = Minecraft.getMinecraft();
         FontRenderer fr = mc.fontRenderer;
-        BatchingFontRenderer bfr = getBatchedFontRenderer();
+        BatchingFontRenderer bfr = ensureBatched();
 
-        String text = "Travel Anchor"; // временная заглушка
+        GL11.glPushMatrix();
+        try {
+            // Центр блока
+            GL11.glTranslated(x + 0.5, y + 0.5, z + 0.5);
 
-        int textW;
+            // Биллбординг к камере
+            RenderManager rm = RenderManager.instance;
+            GL11.glRotatef(-rm.playerViewY, 0F, 1F, 0F);
+            GL11.glRotatef(rm.playerViewX, 1F, 0F, 0F);
+
+            // Смещение вверх над блоком
+            GL11.glTranslatef(0f, LABEL_Y_OFFSET, 0f);
+
+            // Масштабируем под пиксели шрифта
+            float scale = SCALE * fr.FONT_HEIGHT;
+            GL11.glScalef(scale, scale, scale);
+
+            // Ширина текста (через batched если доступен — рефлексией)
+            int textW = getStringWidthReflective(bfr, fr, label);
+            int textH = fr.FONT_HEIGHT;
+
+            // Центрируем по X
+            GL11.glTranslatef(-textW / 2.0f, 0f, 0f);
+
+            // Фон
+            drawBackgroundQuad(anchor, textW, textH);
+
+            // Обязательный бинд текстуры шрифта — это ключ к фиксу «квадратов»
+            bindFontTextureSafe(fr, mc);
+
+            // Тень и основной текст
+            drawStringReflective(bfr, fr, label, SHADOW_COLOR, 1, 1);
+            drawStringReflective(bfr, fr, label, TEXT_COLOR, 0, 0);
+
+        } finally {
+            GL11.glPopMatrix();
+        }
+    }
+
+    // ---------- утилиты рисования ----------
+
+    private void drawBackgroundQuad(TileTravelAnchor anchor, int textW, int textH) {
+        float alpha = BG_A;
+        try {
+            if (TravelController.instance.isBlockSelected(
+                    new crazypants.enderio.teleport.anchor.BlockCoord(anchor))) {
+                alpha = Math.min(0.85f, BG_A + 0.30f);
+            }
+        } catch (Throwable ignored) {}
+
+        GL11.glDisable(GL11.GL_TEXTURE_2D);
+        GL11.glEnable(GL11.GL_BLEND);
+        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        GL11.glColor4f(BG_R, BG_G, BG_B, alpha);
+
+        final float padX = 2f, padY = 1f;
+        float x0 = -padX, y0 = -padY, x1 = textW + padX, y1 = textH + padY;
+
+        Tessellator t = Tessellator.instance;
+        t.startDrawingQuads();
+        t.addVertex(x0, y0, 0);
+        t.addVertex(x0, y1, 0);
+        t.addVertex(x1, y1, 0);
+        t.addVertex(x1, y0, 0);
+        t.draw();
+
+        GL11.glDisable(GL11.GL_BLEND);
+        GL11.glEnable(GL11.GL_TEXTURE_2D);
+        GL11.glColor4f(1f, 1f, 1f, 1f); // reset
+    }
+
+    private void bindFontTextureSafe(FontRenderer fr, Minecraft mc) {
+        try {
+            Field fLoc = FontRenderer.class.getDeclaredField("locationFontTexture");
+            fLoc.setAccessible(true);
+            ResourceLocation loc = (ResourceLocation) fLoc.get(fr);
+            if (loc != null) {
+                mc.getTextureManager().bindTexture(loc);
+                return;
+            }
+        } catch (Throwable ignored) {}
+        // fallback — обычно drawString сам биндит, но лучше явно
+    }
+
+    private int getStringWidthReflective(BatchingFontRenderer bfr, FontRenderer fr, String s) {
         if (bfr != null) {
             try {
-                textW = (int) bfr.getClass()
-                        .getMethod("getStringWidth", String.class)
-                        .invoke(bfr, text);
-            } catch (Exception e) {
-                textW = fr.getStringWidth(text);
-            }
-        } else {
-            textW = fr.getStringWidth(text);
+                Method m = bfr.getClass().getMethod("getStringWidth", String.class);
+                Object res = m.invoke(bfr, s);
+                if (res instanceof Integer) return (Integer) res;
+            } catch (Throwable ignored) {}
         }
-
-        float scale = 0.02F;
-
-        RenderUtil.drawBillboardedText(
-                new Vector3f((float) x + 0.5F, (float) y + 1.5F, (float) z + 0.5F),
-                text,
-                scale,
-                new Vector4f(1, 1, 1, 1),
-                false,
-                bfr != null ? fr : fr, // временно всегда fr, т.к. RenderUtil требует FontRenderer
-                true,
-                new Vector4f(0, 0, 0, 0.25F)
-        );
+        return fr.getStringWidth(s);
     }
-}
+
+    private void drawStringReflective(BatchingFontRenderer bfr, FontRenderer fr,
+                                      String s, int color, int offX, int offY) {
+        // Пробуем batched: (String,float,float,int,boolean) или (String,int,int,int,boolean) или (String,int,int,int)
+        if (bfr != null) {
+            try {
+                Method m = bfr.getClass().getMethod("drawString",
+                        String.class, float.class, float.class, int.class, boolean.class);
+                m.invoke(bfr, s, (float) offX, (float) offY, color, false);
+                return;
+            } catch (Throwable ignored) {}
+            try {
+                Method m = bfr.getClass().getMethod("drawString",
+                        String.class, int.class, int.class, int.class, boolean.class);
+                m.invoke(bfr, s, offX, offY, color, false);
+                return;
+            } catch (Throwable ignored) {}
+            try {
