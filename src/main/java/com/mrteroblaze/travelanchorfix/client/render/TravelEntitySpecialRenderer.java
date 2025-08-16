@@ -50,6 +50,8 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
             return;
         }
 
+        LOG.debug("[TravelAnchorFix] Рендер якоря '{}' на координатах ({}, {}, {})", text, x, y, z);
+
         GL11.glPushMatrix();
         GL11.glTranslated(x + 0.5, y + 1.5, z + 0.5);
         GL11.glNormal3f(0.0F, 1.0F, 0.0F);
@@ -59,7 +61,7 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
         int width;
         if (batchingFr != null) {
-            width = batchingFr.getStringWidth(text, 0, text.length());
+            width = batchingFr.getStringWidth((CharSequence) text, 0, text.length());
             LOG.debug("[TravelAnchorFix] Используется BatchingFontRenderer. Ширина текста '{}' = {}", text, width);
         } else {
             width = vanillaFr.getStringWidth(text);
