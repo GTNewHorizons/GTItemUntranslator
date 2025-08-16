@@ -1,12 +1,5 @@
 package com.mrteroblaze.travelanchorfix.client.render;
 
-import com.enderio.core.client.render.RenderUtil;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
-import crazypants.enderio.EnderIO;
-import crazypants.enderio.teleport.TravelController;
-import crazypants.enderio.teleport.anchor.TileTravelAnchor;
-import crazypants.enderio.teleport.anchor.BlockTravelAnchor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.entity.RenderManager;
@@ -14,15 +7,24 @@ import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIcon;
-import net.minecraft.util.ResourceLocation;
+
 import org.lwjgl.opengl.GL11;
+
+import com.enderio.core.client.render.RenderUtil;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import crazypants.enderio.EnderIO;
+import crazypants.enderio.teleport.TravelController;
+import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 
 @SideOnly(Side.CLIENT)
 public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
     private static IIcon getSelectedOverlayIcon() {
         try {
-            java.lang.reflect.Field f = crazypants.enderio.teleport.anchor.BlockTravelAnchor.class.getDeclaredField("selectedOverlayIcon");
+            java.lang.reflect.Field f = crazypants.enderio.teleport.anchor.BlockTravelAnchor.class
+                .getDeclaredField("selectedOverlayIcon");
             f.setAccessible(true);
             return (IIcon) f.get(EnderIO.blockTravelPlatform);
         } catch (Throwable t) {
@@ -33,7 +35,8 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
     private static IIcon getHighlightOverlayIcon() {
         try {
-            java.lang.reflect.Field f = crazypants.enderio.teleport.anchor.BlockTravelAnchor.class.getDeclaredField("highlightOverlayIcon");
+            java.lang.reflect.Field f = crazypants.enderio.teleport.anchor.BlockTravelAnchor.class
+                .getDeclaredField("highlightOverlayIcon");
             f.setAccessible(true);
             return (IIcon) f.get(EnderIO.blockTravelPlatform);
         } catch (Throwable t) {
