@@ -12,8 +12,10 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.IBlockAccess;
+
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
+
 import com.enderio.core.client.render.BoundingBox;
 import com.enderio.core.client.render.CubeRenderer;
 import com.enderio.core.client.render.RenderUtil;
@@ -22,6 +24,7 @@ import com.enderio.core.common.util.Util;
 import com.enderio.core.common.vecmath.Vector3d;
 import com.enderio.core.common.vecmath.Vector3f;
 import com.enderio.core.common.vecmath.Vector4f;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import crazypants.enderio.EnderIO;
@@ -173,7 +176,8 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
             }
         }
         String toRender = ta.getLabel();
-        if (toRender != null && toRender.trim().length() > 0) {
+        if (toRender != null && toRender.trim()
+            .length() > 0) {
             GL11.glColor4f(1, 1, 1, 1);
             Vector4f bgCol = RenderUtil.DEFAULT_TEXT_BG_COL;
             if (TravelController.instance.isBlockSelected(new BlockCoord(tileentity))) {
@@ -236,11 +240,13 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
                                 // Биндим текстуру шрифта (не обязательно, но оставим для совместимости)
                                 try {
-                                    java.lang.reflect.Field fLoc = FontRenderer.class.getDeclaredField("locationFontTexture");
+                                    java.lang.reflect.Field fLoc = FontRenderer.class
+                                        .getDeclaredField("locationFontTexture");
                                     fLoc.setAccessible(true);
                                     ResourceLocation loc = (ResourceLocation) fLoc.get(fr);
                                     if (loc != null) {
-                                        mc.getTextureManager().bindTexture(loc);
+                                        mc.getTextureManager()
+                                            .bindTexture(loc);
                                     }
                                 } catch (Throwable ignored) {}
 
@@ -274,7 +280,8 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
     protected void renderBlock(IBlockAccess world, double sf) {
         Tessellator.instance.setColorRGBA_F(1, 1, 1, 0.75f);
-        CubeRenderer.get().render(BoundingBox.UNIT_CUBE.scale(sf, sf, sf), EnderIO.blockTravelPlatform.getIcon(0, 0));
+        CubeRenderer.get()
+            .render(BoundingBox.UNIT_CUBE.scale(sf, sf, sf), EnderIO.blockTravelPlatform.getIcon(0, 0));
     }
 
     public Vector4f getSelectedColor() {
