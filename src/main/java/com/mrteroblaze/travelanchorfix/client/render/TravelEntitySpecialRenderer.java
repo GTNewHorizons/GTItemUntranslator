@@ -1,7 +1,7 @@
 package com.mrteroblaze.travelanchorfix.client.render;
 
-import com.enderio.blocks.travel.BlockTravelAnchor;
-import com.enderio.blocks.travel.TileTravelAnchor;
+import crazypants.enderio.teleport.anchor.BlockTravelAnchor;
+import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 import com.mrteroblaze.travelanchorfix.TravelAnchorFix;
 import com.gtnewhorizons.angelica.client.font.BatchingFontRenderer;
 import net.minecraft.client.Minecraft;
