@@ -1,8 +1,7 @@
 package com.mrteroblaze.travelanchorfix.client.render;
 
-import com.gtnewhorizons.angelica.client.font.BatchingFontRenderer;
-import crazypants.enderio.EnderIO;
-import crazypants.enderio.teleport.anchor.TileTravelAnchor;
+import java.lang.reflect.Field;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.OpenGlHelper;
@@ -10,11 +9,14 @@ import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL11;
 
-import java.lang.reflect.Field;
+import com.gtnewhorizons.angelica.client.font.BatchingFontRenderer;
+
+import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 
 public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
@@ -51,7 +53,13 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
             fFontTex.setAccessible(true);
             ResourceLocation fontTex = (ResourceLocation) fFontTex.get(fr);
 
-            BatchingFontRenderer res = new BatchingFontRenderer(fr, unicodePages, charWidth, glyphWidth, colorCode, fontTex);
+            BatchingFontRenderer res = new BatchingFontRenderer(
+                fr,
+                unicodePages,
+                charWidth,
+                glyphWidth,
+                colorCode,
+                fontTex);
             LOG.info("[TravelAnchorFix] BatchingFontRenderer создан успешно");
             return res;
         } catch (Throwable t) {
@@ -107,6 +115,7 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
     /**
      * Рисуем фон и сам текст.
+     * 
      * @param behindWallsPass true = рисуем «сквозной» полупрозрачный черный фон + белый текст без depth
      *                        false = рисуем обычный белый текст с depth
      */
