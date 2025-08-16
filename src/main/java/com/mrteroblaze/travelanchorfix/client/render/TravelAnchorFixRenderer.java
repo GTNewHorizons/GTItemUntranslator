@@ -1,5 +1,6 @@
 package com.mrteroblaze.travelanchorfix.client.render;
 
+import com.enderio.core.common.util.BlockCoord;
 import com.gtnewhorizons.angelica.client.font.BatchingFontRenderer;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.relauncher.Side;
@@ -127,7 +128,7 @@ public class TravelAnchorFixRenderer extends TileEntitySpecialRenderer {
         float alpha = BG_A;
         try {
             if (TravelController.instance.isBlockSelected(
-                    new crazypants.enderio.teleport.anchor.BlockCoord(anchor))) {
+                    new com.enderio.core.common.util.BlockCoord(anchor))) {
                 alpha = Math.min(0.85f, BG_A + 0.30f);
             }
         } catch (Throwable ignored) {}
