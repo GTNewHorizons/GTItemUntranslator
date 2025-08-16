@@ -1,12 +1,12 @@
 package com.mrteroblaze.travelanchorfix.client.render;
 
-import crazypants.enderio.teleport.anchor.BlockTravelAnchor;
 import crazypants.enderio.teleport.anchor.TileTravelAnchor;
-import com.mrteroblaze.travelanchorfix.TravelAnchorFix;
+import com.enderio.core.client.render.RenderUtil;
 import com.gtnewhorizons.angelica.client.font.BatchingFontRenderer;
+import com.gtnewhorizons.angelica.mixins.interfaces.FontRendererAccessor;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
@@ -17,71 +17,73 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
     private static final Logger LOG = LogManager.getLogger("TravelAnchorFix");
 
-    private final FontRenderer vanillaFr;
     private final BatchingFontRenderer batchingFr;
+    private final FontRenderer vanillaFr;
 
     public TravelEntitySpecialRenderer() {
-        this.vanillaFr = Minecraft.getMinecraft().fontRenderer;
-        this.batchingFr = tryCreateBatchingFontRenderer();
-    }
+        FontRenderer fr = Minecraft.getMinecraft().fontRenderer;
+        this.vanillaFr = fr;
 
-    private BatchingFontRenderer tryCreateBatchingFontRenderer() {
+        BatchingFontRenderer tmp = null;
         try {
-            FontRenderer fr = Minecraft.getMinecraft().fontRenderer;
-            if (fr instanceof com.gtnewhorizons.angelica.mixins.interfaces.FontRendererAccessor) {
-                com.gtnewhorizons.angelica.mixins.interfaces.FontRendererAccessor acc =
-                        (com.gtnewhorizons.angelica.mixins.interfaces.FontRendererAccessor) fr;
-                BatchingFontRenderer bfr = acc.angelica$getBatcher();
-                if (bfr != null) {
+            if (fr instanceof FontRendererAccessor acc) {
+                tmp = acc.angelica$getBatcher();
+                if (tmp != null) {
                     LOG.info("[TravelAnchorFix] Успешно получили BatchingFontRenderer из Angelica");
-                    return bfr;
+                } else {
+                    LOG.warn("[TravelAnchorFix] angelica$getBatcher() вернул null, используем ванильный FontRenderer");
                 }
+            } else {
+                LOG.warn("[TravelAnchorFix] FontRenderer не является FontRendererAccessor, используем ванильный FontRenderer");
             }
-            LOG.warn("[TravelAnchorFix] BatchingFontRenderer недоступен, fallback на FontRenderer");
         } catch (Throwable t) {
-            LOG.error("[TravelAnchorFix] Ошибка при создании BatchingFontRenderer, используем fallback", t);
+            LOG.error("[TravelAnchorFix] Ошибка при инициализации BatchingFontRenderer", t);
         }
-        return null;
+        this.batchingFr = tmp;
     }
 
     @Override
     public void renderTileEntityAt(TileEntity te, double x, double y, double z, float partialTicks) {
-        if (!(te instanceof TileTravelAnchor)) {
-            return;
-        }
+        if (!(te instanceof TileTravelAnchor anchor)) return;
 
-        TileTravelAnchor anchor = (TileTravelAnchor) te;
         String text = anchor.getLabel();
-        if (text == null || text.isEmpty()) {
-            return;
-        }
+        if (text == null || text.isEmpty()) return;
 
         GL11.glPushMatrix();
-        GL11.glTranslated(x + 0.5, y + 1.2, z + 0.5);
+        GL11.glTranslated(x + 0.5, y + 1.5, z + 0.5);
         GL11.glNormal3f(0.0F, 1.0F, 0.0F);
+
         GL11.glRotatef(-Minecraft.getMinecraft().thePlayer.rotationYaw, 0.0F, 1.0F, 0.0F);
         GL11.glRotatef(Minecraft.getMinecraft().thePlayer.rotationPitch, 1.0F, 0.0F, 0.0F);
-        GL11.glScalef(-0.016F, -0.016F, 0.016F);
 
-        int width = vanillaFr.getStringWidth(text);
+        GL11.glScalef(-0.025F, -0.025F, 0.025F);
+
+        int width;
+        if (batchingFr != null) {
+            try {
+                width = batchingFr.getStringWidth(text, 0, text.length());
+            } catch (Throwable t) {
+                LOG.error("[TravelAnchorFix] Ошибка getStringWidth у batchingFr, fallback на ваниль", t);
+                width = vanillaFr.getStringWidth(text);
+            }
+        } else {
+            width = vanillaFr.getStringWidth(text);
+        }
+
         int half = width / 2;
 
-        // Фон под текст
-        GL11.glDisable(GL11.GL_TEXTURE_2D);
-        GL11.glEnable(GL11.GL_BLEND);
-        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        GL11.glColor4f(0.0F, 0.0F, 0.0F, 0.5F);
-        GL11.glBegin(GL11.GL_QUADS);
-        GL11.glVertex3f(-half - 2, -2, 0.0F);
-        GL11.glVertex3f(-half - 2, 9, 0.0F);
-        GL11.glVertex3f(half + 2, 9, 0.0F);
-        GL11.glVertex3f(half + 2, -2, 0.0F);
-        GL11.glEnd();
-        GL11.glEnable(GL11.GL_TEXTURE_2D);
+        // Рисуем тёмный фон
+        RenderUtil.drawRect(-half - 2, -2, half + 2, 9, 0x80000000);
 
-        // Сам текст
+        // Рисуем текст
         if (batchingFr != null) {
-            batchingFr.drawString(text, -half, 0, 0xFFFFFFFF, false);
+            try {
+                batchingFr.drawString(-half, 0, 0xFFFFFFFF,
+                                      false, false, text, 0, text.length());
+            } catch (Throwable t) {
+                LOG.error("[TravelAnchorFix] Ошибка drawString у batchingFr, fallback на ваниль", t);
+                vanillaFr.drawString(text, -half, 0, 0xFFFFFFFF);
+            }
         } else {
             vanillaFr.drawString(text, -half, 0, 0xFFFFFFFF);
         }
@@ -89,15 +91,26 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
         GL11.glPopMatrix();
     }
 
-    private ResourceLocation getSelectedOverlayIcon() {
-        ResourceLocation icon = BlockTravelAnchor.selectedOverlayIcon;
-        LOG.debug("[TravelAnchorFix] getSelectedOverlayIcon -> {}", (icon != null ? icon.toString() : "null"));
-        return icon;
+    // DEBUG для иконок
+    public static ResourceLocation getSelectedOverlayIcon() {
+        ResourceLocation res = null;
+        try {
+            res = TileTravelAnchor.getSelectedOverlayIcon();
+            LOG.info("[TravelAnchorFix] getSelectedOverlayIcon() = {}", (res != null ? res : "null"));
+        } catch (Throwable t) {
+            LOG.error("[TravelAnchorFix] Ошибка getSelectedOverlayIcon()", t);
+        }
+        return res;
     }
 
-    private ResourceLocation getHighlightOverlayIcon() {
-        ResourceLocation icon = BlockTravelAnchor.highlightOverlayIcon;
-        LOG.debug("[TravelAnchorFix] getHighlightOverlayIcon -> {}", (icon != null ? icon.toString() : "null"));
-        return icon;
+    public static ResourceLocation getHighlightOverlayIcon() {
+        ResourceLocation res = null;
+        try {
+            res = TileTravelAnchor.getHighlightOverlayIcon();
+            LOG.info("[TravelAnchorFix] getHighlightOverlayIcon() = {}", (res != null ? res : "null"));
+        } catch (Throwable t) {
+            LOG.error("[TravelAnchorFix] Ошибка getHighlightOverlayIcon()", t);
+        }
+        return res;
     }
 }
