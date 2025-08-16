@@ -3,7 +3,7 @@ package com.mrteroblaze.travelanchorfix.client.render;
 import com.enderio.core.client.render.RenderUtil;
 import com.enderio.core.common.vecmath.Vector3d;
 import crazypants.enderio.EnderIO;
-import crazypants.enderio.teleport.TileTravelAnchor;
+// ⬇️ убраны импорты TileTravelAnchor и BatchingFontRenderer
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.entity.RenderManager;
@@ -22,12 +22,11 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
     @Override
     public void renderTileEntityAt(TileEntity te, double x, double y, double z, float partialTick) {
-        if (!(te instanceof TileTravelAnchor)) {
+        if (!isTravelAnchor(te)) {
             return;
         }
 
-        TileTravelAnchor anchor = (TileTravelAnchor) te;
-        String toRender = anchor.getLabel();
+        String toRender = getAnchorLabel(te);
         if (toRender == null || toRender.isEmpty()) {
             return;
         }
@@ -54,7 +53,7 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
             int textW = fr.getStringWidth(toRender);
             int baseX = -textW / 2;
 
-            // фон под текстом
+            // фон под текстом (полупрозрачный прямоугольник)
             GL11.glDisable(GL11.GL_TEXTURE_2D);
             RenderUtil.drawQuad2D(baseX - 1, -1, textW + 2, 8, 0x80000000);
             GL11.glEnable(GL11.GL_TEXTURE_2D);
@@ -65,31 +64,3 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
             GL11.glEnable(GL11.GL_DEPTH_TEST);
             GL11.glDepthMask(true);
             GL11.glEnable(GL11.GL_LIGHTING);
-            GL11.glDisable(GL11.GL_BLEND);
-        } finally {
-            GL11.glPopMatrix();
-        }
-    }
-
-    private static IIcon getSelectedOverlayIcon() {
-        try {
-            java.lang.reflect.Field f = EnderIO.blockTravelPlatform.getClass().getDeclaredField("selectedOverlayIcon");
-            f.setAccessible(true);
-            return (IIcon) f.get(EnderIO.blockTravelPlatform);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return null;
-        }
-    }
-
-    private static IIcon getHighlightOverlayIcon() {
-        try {
-            java.lang.reflect.Field f = EnderIO.blockTravelPlatform.getClass().getDeclaredField("highlightOverlayIcon");
-            f.setAccessible(true);
-            return (IIcon) f.get(EnderIO.blockTravelPlatform);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return null;
-        }
-    }
-}
