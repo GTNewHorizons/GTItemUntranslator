@@ -1,25 +1,30 @@
 package com.mrteroblaze.travelanchorfix;
 
-import com.mrteroblaze.travelanchorfix.client.render.TravelEntitySpecialRenderer;
-
-import cpw.mods.fml.client.registry.ClientRegistry;
+import com.mrteroblaze.travelanchorfix.client.render.AnchorLabelRenderer;
 import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import crazypants.enderio.teleport.anchor.TileTravelAnchor;
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.relauncher.Side;
+import net.minecraftforge.common.MinecraftForge;
 
-@Mod(
-    modid = "travelanchorfix",
-    name = "Travel Anchor Fix",
-    version = "1.0.0",
-    dependencies = "required-after:EnderIO;required-after:EnderCore;required-after:angelica")
+@Mod(modid = "travelanchorfix", name = "Travel Anchor Fix", version = "1.0.0",
+     dependencies = "required-after:EnderIO;required-after:EnderCore")
 public class TravelAnchorFix {
 
-    @Mod.EventHandler
-    public void preInit(FMLPreInitializationEvent event) {}
+    @EventHandler
+    public void preInit(FMLPreInitializationEvent e) {
+        // ничего
+    }
 
-    @Mod.EventHandler
-    public void init(FMLInitializationEvent event) {
-        ClientRegistry.bindTileEntitySpecialRenderer(TileTravelAnchor.class, new TravelEntitySpecialRenderer());
+    @EventHandler
+    public void init(FMLInitializationEvent e) {
+        if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT) {
+            // ВАЖНО: НЕ подменяем TESR у TileTravelAnchor!
+            // Просто вешаем наш отрисовщик подписи на RenderWorldLastEvent
+            MinecraftForge.EVENT_BUS.register(new AnchorLabelRenderer());
+            System.out.println("[TravelAnchorFix] AnchorLabelRenderer registered (RenderWorldLastEvent).");
+        }
     }
 }
