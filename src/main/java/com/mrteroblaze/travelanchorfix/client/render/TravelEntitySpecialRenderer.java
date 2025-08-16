@@ -5,7 +5,6 @@ import com.gtnewhorizons.angelica.client.font.BatchingFontRenderer;
 import com.gtnewhorizons.angelica.mixins.interfaces.FontRendererAccessor;
 
 import crazypants.enderio.EnderIO;
-import crazypants.enderio.machine.travel.AnchorTravelSource;
 import crazypants.enderio.machine.travel.TileTravelAnchor;
 
 import net.minecraft.client.Minecraft;
