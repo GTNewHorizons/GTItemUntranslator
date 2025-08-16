@@ -1,4 +1,4 @@
-package crazypants.enderio.teleport.anchor;
+package com.mrteroblaze.travelanchorfix.client.render;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
