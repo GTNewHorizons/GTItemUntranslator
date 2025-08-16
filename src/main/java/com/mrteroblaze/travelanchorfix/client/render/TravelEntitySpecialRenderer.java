@@ -250,7 +250,7 @@ private BatchingFontRenderer ensureTravelAnchorBFR(FontRenderer fr) {
             // Billboard к камере
             RenderManager rm = RenderManager.instance;
             GL11.glRotatef(-rm.playerViewY, 0.0F, 1.0F, 0.0F);
-            GL11.glRotatef(rm.playerViewX, 1.0F, 0.0F);
+            GL11.glRotatef(rm.playerViewX, 1.0F, 0.0F, 0.0F);
 
             // Масштаб: в TESR обычно ~0.025; учитываем size из оригинала
             final float s = 0.025F * (size * 2.0F);
