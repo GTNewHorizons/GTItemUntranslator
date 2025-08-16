@@ -194,3 +194,17 @@ public class TravelAnchorFixRenderer extends TileEntitySpecialRenderer {
                 return;
             } catch (Throwable ignored) {}
             try {
+                Method m = bfr.getClass().getMethod("drawString",
+                        String.class, int.class, int.class, int.class);
+                m.invoke(bfr, s, offX, offY, color);
+                return;
+            } catch (Throwable ignored) {}
+        }
+        // Fallback — ваниль
+        if (offX != 0 || offY != 0) {
+            fr.drawString(s, offX, offY, color, false);
+        } else {
+            fr.drawString(s, 0, 0, color, false);
+        }
+    }
+}
