@@ -187,7 +187,7 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
                     GL11.glPushMatrix();
                     GL11.glScalef(globalScale, globalScale, globalScale);
                     Vector3f pos = new Vector3f(0, -1.2f, 0);
-                    RenderUtil.drawBillboardQuad(pos, 0.4f, 0.4f, EnderIO.blockTravelPlatform.getIcon(0, 0));
+                    RenderUtil.renderBillboardQuad(0.4f, 0.4f, 0.4f, EnderIO.blockTravelPlatform.getIcon(0, 0));
                     GL11.glPopMatrix();
                 }
 
