@@ -1,7 +1,7 @@
 package com.mrteroblaze.travelanchorfix.client.render;
 
 import com.enderio.core.client.render.RenderUtil;
-import com.gtnewhorizons.angelica.client.render.BatchingFontRenderer;
+import com.gtnewhorizons.angelica.client.font.BatchingFontRenderer;
 import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.common.Loader;
 import net.minecraft.client.Minecraft;
