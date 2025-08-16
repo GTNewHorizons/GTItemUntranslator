@@ -17,7 +17,7 @@ import org.lwjgl.opengl.GL11;
 
 import crazypants.enderio.EnderIO;
 import crazypants.enderio.teleport.TravelController;
-import crazypants.util.RenderUtil;
+import com.enderio.core.client.render.RenderUtil;
 
 public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer<TileTravelAnchor> {
 
