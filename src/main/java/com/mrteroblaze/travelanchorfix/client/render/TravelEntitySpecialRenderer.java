@@ -1,6 +1,6 @@
 package com.mrteroblaze.travelanchorfix.client.render;
 
-import com.enderio.EnderIO;
+import crazypants.enderio.EnderIO;
 import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
