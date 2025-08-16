@@ -1,108 +1,84 @@
 package com.mrteroblaze.travelanchorfix.client.render;
 
-import java.lang.reflect.Field;
-
+import com.gtnewhorizons.angelica.client.font.BatchingFontRenderer;
+import cpw.mods.fml.client.FMLClientHandler;
+import cpw.mods.fml.common.Loader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
-import net.minecraft.tileentity.TileEntity;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.entity.Render;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.ResourceLocation;
 import org.lwjgl.opengl.GL11;
 
-import com.gtnewhorizons.angelica.client.font.BatchingFontRenderer;
+public class TravelEntitySpecialRenderer extends Render {
 
-import crazypants.enderio.EnderIO;
-import crazypants.enderio.teleport.anchor.TileTravelAnchor;
-
-public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
-
-    private static final Logger LOG = LogManager.getLogger("TravelAnchorFix");
-
-    private static Object selOverlayIcon;
-    private static Object hlOverlayIcon;
-
-    private final BatchingFontRenderer bfr;
+    private final FontRenderer vanillaFont;
+    private final BatchingFontRenderer batchingFont;
+    private final boolean useBatching;
 
     public TravelEntitySpecialRenderer() {
-        BatchingFontRenderer tmp = null;
-        try {
-            // Angelica BatchingFontRenderer через рефлексию
-            Class<?> cls = Class.forName("alexiil.mc.mod.angelica.client.font.BatchingFontRenderer");
-            tmp = (BatchingFontRenderer) cls.getConstructor(FontRenderer.class)
-                .newInstance(Minecraft.getMinecraft().fontRenderer);
-            LOG.info("[TravelAnchorFix] Successfully hooked into Angelica BatchingFontRenderer");
-        } catch (Throwable t) {
-            LOG.warn(
-                "[TravelAnchorFix] Angelica BatchingFontRenderer not available, fallback to vanilla FontRenderer",
-                t);
-        }
-        bfr = tmp;
-
-        try {
-            Class<?> blockCls = Class.forName("crazypants.enderio.teleport.anchor.BlockTravelAnchor");
-            Field f1 = blockCls.getDeclaredField("selectedOverlayIcon");
-            f1.setAccessible(true);
-            selOverlayIcon = f1.get(EnderIO.blockTravelPlatform);
-            Field f2 = blockCls.getDeclaredField("highlightOverlayIcon");
-            f2.setAccessible(true);
-            hlOverlayIcon = f2.get(EnderIO.blockTravelPlatform);
-            LOG.info("[TravelAnchorFix] Successfully hooked overlay icons");
-        } catch (Throwable t) {
-            LOG.error("[TravelAnchorFix] Could not access overlay icons", t);
+        this.vanillaFont = Minecraft.getMinecraft().fontRenderer;
+        if (Loader.isModLoaded("angelica")) {
+            this.batchingFont = BatchingFontRenderer.INSTANCE;
+            this.useBatching = true;
+            System.out.println("[TravelAnchorFix] Using Angelica BatchingFontRenderer");
+        } else {
+            this.batchingFont = null;
+            this.useBatching = false;
+            System.out.println("[TravelAnchorFix] Angelica not found, using vanilla FontRenderer");
         }
     }
 
     @Override
-    public void renderTileEntityAt(TileEntity te, double x, double y, double z, float partialTicks) {
-        if (!(te instanceof TileTravelAnchor)) return;
-        TileTravelAnchor anchor = (TileTravelAnchor) te;
+    protected ResourceLocation getEntityTexture(Entity entity) {
+        return null; // у якорей нет текстуры
+    }
 
-        String text = anchor.getLabel();
-        if (text == null || text.isEmpty()) return;
-
-        FontRenderer fr = Minecraft.getMinecraft().fontRenderer;
-        int width = fr.getStringWidth(text);
-
+    @Override
+    public void doRender(Entity entity, double x, double y, double z, float yaw, float partialTicks) {
+        // Подсветка якоря (рамка)
         GL11.glPushMatrix();
-        GL11.glTranslated(x + 0.5, y + 1.5, z + 0.5);
+        GL11.glTranslated(x, y + 1.2, z);
+        GL11.glNormal3f(0.0F, 1.0F, 0.0F);
+        GL11.glRotatef(-this.renderManager.playerViewY, 0.0F, 1.0F, 0.0F);
+        GL11.glRotatef(this.renderManager.playerViewX, 1.0F, 0.0F, 0.0F);
+        GL11.glScalef(-0.016F, -0.016F, 0.016F);
+        GL11.glDisable(GL11.GL_LIGHTING);
+        GL11.glDepthMask(false);
 
-        // повернуть к камере
-        GL11.glRotatef(-Minecraft.getMinecraft().thePlayer.rotationYaw, 0.0F, 1.0F, 0.0F);
-        GL11.glRotatef(Minecraft.getMinecraft().thePlayer.rotationPitch, 1.0F, 0.0F, 0.0F);
+        String text = entity.getCommandSenderName(); // имя якоря
+        int width;
 
-        GL11.glScalef(-0.025F, -0.025F, 0.025F);
+        if (useBatching) {
+            width = batchingFont.getStringWidth(text);
+        } else {
+            width = vanillaFont.getStringWidth(text);
+        }
 
-        // фон для отладки (черный прямоугольник)
+        int halfWidth = width / 2;
+
+        // фон
+        Tessellator tess = Tessellator.instance;
         GL11.glDisable(GL11.GL_TEXTURE_2D);
-        GL11.glColor4f(0f, 0f, 0f, 0.5f);
-        GL11.glBegin(GL11.GL_QUADS);
-        GL11.glVertex3f(-width / 2f - 2, -2, 0.0f);
-        GL11.glVertex3f(-width / 2f - 2, 10, 0.0f);
-        GL11.glVertex3f(width / 2f + 2, 10, 0.0f);
-        GL11.glVertex3f(width / 2f + 2, -2, 0.0f);
-        GL11.glEnd();
+        tess.startDrawingQuads();
+        tess.setColorRGBA_F(0, 0, 0, 0.25f);
+        tess.addVertex(-halfWidth - 2, -2, 0.0D);
+        tess.addVertex(-halfWidth - 2, 9, 0.0D);
+        tess.addVertex(halfWidth + 2, 9, 0.0D);
+        tess.addVertex(halfWidth + 2, -2, 0.0D);
+        tess.draw();
         GL11.glEnable(GL11.GL_TEXTURE_2D);
 
         // текст
-        if (bfr != null) {
-            LOG.info("[TravelAnchorFix] Drawing with BatchingFontRenderer: '{}'", text);
-            bfr.drawString(0f, 0f, 0xFFFFFFFF, false, false, text, 0, text.length());
+        if (useBatching) {
+            batchingFont.drawString(text, -halfWidth, 0, 0xFFFFFFFF, false, false, null, 0, 0);
         } else {
-            LOG.info("[TravelAnchorFix] Drawing with default FontRenderer: '{}'", text);
-            fr.drawString(text, -width / 2, 0, 0xFFFFFFFF);
+            vanillaFont.drawString(text, -halfWidth, 0, 0xFFFFFFFF);
         }
 
+        GL11.glDepthMask(true);
+        GL11.glEnable(GL11.GL_LIGHTING);
         GL11.glPopMatrix();
-    }
-
-    // отдаем иконки через reflection
-    public static Object getSelectedOverlayIcon() {
-        return selOverlayIcon;
-    }
-
-    public static Object getHighlightOverlayIcon() {
-        return hlOverlayIcon;
     }
 }
