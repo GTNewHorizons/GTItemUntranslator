@@ -29,7 +29,7 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
         BatchingFontRenderer tmp = null;
         try {
             // Angelica BatchingFontRenderer через рефлексию
-            Class<?> cls = Class.forName("alexiil.mc.mod.angelica.client.render.BatchingFontRenderer");
+            Class<?> cls = Class.forName("alexiil.mc.mod.angelica.client.font.BatchingFontRenderer");
             tmp = (BatchingFontRenderer) cls.getConstructor(FontRenderer.class)
                 .newInstance(Minecraft.getMinecraft().fontRenderer);
             LOG.info("[TravelAnchorFix] Successfully hooked into Angelica BatchingFontRenderer");
