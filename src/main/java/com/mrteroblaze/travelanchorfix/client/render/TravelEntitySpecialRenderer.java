@@ -1,24 +1,28 @@
 package com.mrteroblaze.travelanchorfix.client.render;
 
-import crazypants.enderio.teleport.anchor.TileTravelAnchor;
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.ResourceLocation;
+
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
+
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 
 @SideOnly(Side.CLIENT)
 public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
-    private static final ResourceLocation TEX_HIGHLIGHT = new ResourceLocation("enderio", "textures/gui/travelAnchorHighlight.png");
-    private static final ResourceLocation TEX_SELECTED = new ResourceLocation("enderio", "textures/gui/travelAnchorSelected.png");
+    private static final ResourceLocation TEX_HIGHLIGHT = new ResourceLocation(
+        "enderio",
+        "textures/gui/travelAnchorHighlight.png");
+    private static final ResourceLocation TEX_SELECTED = new ResourceLocation(
+        "enderio",
+        "textures/gui/travelAnchorSelected.png");
 
     @Override
     public void renderTileEntityAt(TileEntity te, double x, double y, double z, float partialTicks) {
