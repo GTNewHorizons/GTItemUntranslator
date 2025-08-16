@@ -1,20 +1,23 @@
 package com.mrteroblaze.travelanchorfix.client.render;
 
-import com.gtnewhorizons.angelica.mixins.interfaces.FontRendererAccessor;
-import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL11;
+
+import com.gtnewhorizons.angelica.mixins.interfaces.FontRendererAccessor;
+
+import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 
 /**
  * Рендер названия Travel Anchor с фоном.
  * - Ширина: всегда из Vanilla FontRenderer
  * - Отрисовка: через Angelica (FontRendererAccessor#angelica$drawStringBatched) при наличии,
- *   иначе fallback на Vanilla FontRenderer#drawString
+ * иначе fallback на Vanilla FontRenderer#drawString
  */
 public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
@@ -79,7 +82,8 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
         } catch (Throwable t) {
             LOG.error("[TravelAnchorFix] Ошибка в renderTileEntityAt (fallback на Vanilla для текста).", t);
             try {
-                vanillaFr.drawString(anchor.getLabel(), -vanillaFr.getStringWidth(anchor.getLabel()) / 2, 0, 0xFFFFFFFF);
+                vanillaFr
+                    .drawString(anchor.getLabel(), -vanillaFr.getStringWidth(anchor.getLabel()) / 2, 0, 0xFFFFFFFF);
             } catch (Throwable ignored) {}
         } finally {
             GL11.glPopMatrix();
