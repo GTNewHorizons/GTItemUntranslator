@@ -1,6 +1,6 @@
 package com.mrteroblaze.travelanchorfix.client.render;
 
-import com.enderio.machine.travel.TileTravelAnchor;
+import com.enderio.teleport.anchor.TileTravelAnchor;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.client.Minecraft;
