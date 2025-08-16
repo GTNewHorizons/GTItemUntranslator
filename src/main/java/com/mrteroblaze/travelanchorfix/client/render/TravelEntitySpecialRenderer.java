@@ -33,6 +33,7 @@ import crazypants.enderio.EnderIO;
 import crazypants.enderio.api.teleport.ITravelAccessable;
 import crazypants.enderio.api.teleport.TravelSource;
 import crazypants.enderio.teleport.TravelController;
+import crazypants.enderio.teleport.anchor.BlockTravelAnchor;
 
 @SideOnly(Side.CLIENT)
 public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
