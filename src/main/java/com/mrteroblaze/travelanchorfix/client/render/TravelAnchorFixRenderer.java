@@ -20,8 +20,9 @@ public class TravelAnchorFixRenderer extends TileEntitySpecialRenderer {
 
     public static void register() {
         try {
-            Class<? extends TileEntity> teClass = (Class<? extends TileEntity>)
-                    Class.forName("crazypants.enderio.teleport.anchor.TileTravelAnchor");
+            @SuppressWarnings("unchecked")
+            Class<? extends TileEntity> teClass =
+                    (Class<? extends TileEntity>) Class.forName("crazypants.enderio.teleport.anchor.TileTravelAnchor");
             ClientRegistry.bindTileEntitySpecialRenderer(teClass, new TravelAnchorFixRenderer());
         } catch (Exception e) {
             e.printStackTrace();
@@ -71,13 +72,22 @@ public class TravelAnchorFixRenderer extends TileEntitySpecialRenderer {
         FontRenderer fr = mc.fontRenderer;
         BatchingFontRenderer bfr = getBatchedFontRenderer();
 
-        String text = "Travel Anchor"; // Заглушка — в реальности берём имя из TileEntity
+        String text = "Travel Anchor"; // временная заглушка
 
-        int textW = (bfr != null ? ((FontRenderer) bfr).getStringWidth(text) : fr.getStringWidth(text));
+        int textW;
+        if (bfr != null) {
+            try {
+                textW = (int) bfr.getClass()
+                        .getMethod("getStringWidth", String.class)
+                        .invoke(bfr, text);
+            } catch (Exception e) {
+                textW = fr.getStringWidth(text);
+            }
+        } else {
+            textW = fr.getStringWidth(text);
+        }
 
-        // Центрируем текст
         float scale = 0.02F;
-        float textX = -textW / 2F;
 
         RenderUtil.drawBillboardedText(
                 new Vector3f((float) x + 0.5F, (float) y + 1.5F, (float) z + 0.5F),
@@ -85,7 +95,7 @@ public class TravelAnchorFixRenderer extends TileEntitySpecialRenderer {
                 scale,
                 new Vector4f(1, 1, 1, 1),
                 false,
-                bfr != null ? (FontRenderer) bfr : fr,
+                bfr != null ? fr : fr, // временно всегда fr, т.к. RenderUtil требует FontRenderer
                 true,
                 new Vector4f(0, 0, 0, 0.25F)
         );
