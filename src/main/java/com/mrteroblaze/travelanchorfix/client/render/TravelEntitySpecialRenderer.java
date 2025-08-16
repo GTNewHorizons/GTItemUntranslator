@@ -1,11 +1,11 @@
 package com.mrteroblaze.travelanchorfix.client.render;
 
+import com.enderio.core.client.render.RenderUtil;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import crazypants.enderio.EnderIO;
-import crazypants.enderio.teleport.anchor.BlockTravelAnchor;
-import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 import crazypants.enderio.teleport.TravelController;
+import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.entity.RenderManager;
@@ -21,7 +21,7 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
     private static IIcon getSelectedOverlayIcon() {
         try {
-            java.lang.reflect.Field f = BlockTravelAnchor.class.getDeclaredField("selectedOverlayIcon");
+            java.lang.reflect.Field f = crazypants.enderio.machine.travel.BlockTravelAnchor.class.getDeclaredField("selectedOverlayIcon");
             f.setAccessible(true);
             return (IIcon) f.get(EnderIO.blockTravelPlatform);
         } catch (Throwable t) {
@@ -32,7 +32,7 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
     private static IIcon getHighlightOverlayIcon() {
         try {
-            java.lang.reflect.Field f = BlockTravelAnchor.class.getDeclaredField("highlightOverlayIcon");
+            java.lang.reflect.Field f = crazypants.enderio.machine.travel.BlockTravelAnchor.class.getDeclaredField("highlightOverlayIcon");
             f.setAccessible(true);
             return (IIcon) f.get(EnderIO.blockTravelPlatform);
         } catch (Throwable t) {
@@ -41,9 +41,8 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
         }
     }
 
-    private final Minecraft mc = Minecraft.getMinecraft();
-    private final RenderManager rm = RenderManager.instance;
-    private final TravelController tc = TravelController.instance;
+    private final IIcon selectedOverlay = getSelectedOverlayIcon();
+    private final IIcon highlightOverlay = getHighlightOverlayIcon();
 
     @Override
     public void renderTileEntityAt(TileEntity te, double x, double y, double z, float partialTick) {
@@ -52,56 +51,46 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
         }
 
         TileTravelAnchor anchor = (TileTravelAnchor) te;
+        Minecraft mc = Minecraft.getMinecraft();
         EntityPlayer player = mc.thePlayer;
+        TravelController tc = TravelController.instance();
 
-        if (player == null || !tc.isTravelAnchor(anchor)) {
+        if (player == null) {
             return;
         }
 
-        if (!tc.canBlockBeAccessed(mc.theWorld, anchor.xCoord, anchor.yCoord, anchor.zCoord, player)) {
-            return;
+        // рендерим название якоря
+        String text = anchor.getLabel();
+        if (text != null && !text.isEmpty()) {
+            GL11.glPushMatrix();
+            GL11.glTranslated(x + 0.5, y + 1.2, z + 0.5);
+            GL11.glNormal3f(0.0F, 1.0F, 0.0F);
+            GL11.glRotatef(-RenderManager.instance.playerViewY, 0.0F, 1.0F, 0.0F);
+            GL11.glRotatef(RenderManager.instance.playerViewX, 1.0F, 0.0F, 0.0F);
+            GL11.glScalef(-0.025F, -0.025F, 0.025F);
+
+            FontRenderer fr = mc.fontRenderer;
+            int width = fr.getStringWidth(text) / 2;
+
+            GL11.glDisable(GL11.GL_LIGHTING);
+            GL11.glDepthMask(false);
+            GL11.glDisable(GL11.GL_DEPTH_TEST);
+
+            // фон
+            GL11.glEnable(GL11.GL_BLEND);
+            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+            GL11.glDisable(GL11.GL_TEXTURE_2D);
+            RenderUtil.renderQuad2D(-width - 2, -2, 0, fr.getStringWidth(text) + 4, 10, 0x80000000);
+            GL11.glEnable(GL11.GL_TEXTURE_2D);
+            GL11.glDisable(GL11.GL_BLEND);
+
+            // текст
+            fr.drawString(text, -width, 0, 0xFFFFFF);
+
+            GL11.glEnable(GL11.GL_DEPTH_TEST);
+            GL11.glDepthMask(true);
+            GL11.glEnable(GL11.GL_LIGHTING);
+            GL11.glPopMatrix();
         }
-
-        String name = anchor.getLabel();
-        if (name == null || name.trim().isEmpty()) {
-            return;
-        }
-
-        GL11.glPushMatrix();
-        GL11.glTranslated(x + 0.5, y + 1.2, z + 0.5);
-        GL11.glNormal3f(0.0F, 1.0F, 0.0F);
-
-        GL11.glRotatef(-rm.playerViewY, 0.0F, 1.0F, 0.0F);
-        GL11.glRotatef(rm.playerViewX, 1.0F, 0.0F, 0.0F);
-
-        GL11.glScalef(-0.016F * 1.6F, -0.016F * 1.6F, 0.016F * 1.6F);
-
-        GL11.glDisable(GL11.GL_LIGHTING);
-        GL11.glDepthMask(false);
-        GL11.glDisable(GL11.GL_DEPTH_TEST);
-        GL11.glEnable(GL11.GL_BLEND);
-
-        FontRenderer fr = mc.fontRenderer;
-        int textWidth = fr.getStringWidth(name) / 2;
-
-        // фон
-        GL11.glDisable(GL11.GL_TEXTURE_2D);
-        GL11.glBegin(GL11.GL_QUADS);
-        GL11.glColor4f(0.0F, 0.0F, 0.0F, 0.25F);
-        GL11.glVertex3f(-textWidth - 2, -2, 0.0F);
-        GL11.glVertex3f(-textWidth - 2, 9, 0.0F);
-        GL11.glVertex3f(textWidth + 2, 9, 0.0F);
-        GL11.glVertex3f(textWidth + 2, -2, 0.0F);
-        GL11.glEnd();
-        GL11.glEnable(GL11.GL_TEXTURE_2D);
-
-        // текст
-        fr.drawStringWithShadow(name, -textWidth, 0, 0xFFFFFF);
-
-        GL11.glEnable(GL11.GL_DEPTH_TEST);
-        GL11.glDepthMask(true);
-        GL11.glEnable(GL11.GL_LIGHTING);
-
-        GL11.glPopMatrix();
     }
 }
