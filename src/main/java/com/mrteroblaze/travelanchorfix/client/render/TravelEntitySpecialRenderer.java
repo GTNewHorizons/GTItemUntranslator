@@ -1,13 +1,11 @@
 package com.mrteroblaze.travelanchorfix.client.render;
 
 import com.enderio.core.client.render.RenderUtil;
-import crazypants.enderio.EnderIO;
 import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.IIcon;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL11;
@@ -18,24 +16,26 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
     private static final Logger LOG = LogManager.getLogger("TravelAnchorFix");
 
-    private final FontRenderer vanillaFr;
     private final BatchingFontRenderer batchingFr;
+    private final FontRenderer vanillaFr;
 
     public TravelEntitySpecialRenderer() {
-        this.vanillaFr = Minecraft.getMinecraft().fontRenderer;
         BatchingFontRenderer tmp = null;
         try {
             tmp = new BatchingFontRenderer(
                 Minecraft.getMinecraft().fontRenderer,
-                new net.minecraft.util.ResourceLocation[]{},
-                new int[]{}, new byte[]{}, new int[]{},
-                new net.minecraft.util.ResourceLocation("textures/font/ascii.png")
+                new net.minecraft.util.ResourceLocation[0],
+                new int[0],
+                new byte[0],
+                new int[0],
+                null
             );
             LOG.info("[TravelAnchorFix] ✅ Успешно создан BatchingFontRenderer");
         } catch (Throwable t) {
             LOG.warn("[TravelAnchorFix] ⚠ Не удалось создать BatchingFontRenderer, используем ванильный FontRenderer", t);
         }
         this.batchingFr = tmp;
+        this.vanillaFr = Minecraft.getMinecraft().fontRenderer;
     }
 
     @Override
@@ -46,7 +46,6 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
         TileTravelAnchor anchor = (TileTravelAnchor) te;
         String text = anchor.getLabel();
-
         if (text == null || text.isEmpty()) {
             return;
         }
@@ -60,46 +59,51 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
         int width;
         if (batchingFr != null) {
-            width = batchingFr.getStringWidth(text);
-            LOG.debug("[TravelAnchorFix] Используется BatchingFontRenderer. String width: {}", width);
+            width = batchingFr.getStringWidth(text, 0, text.length());
+            LOG.debug("[TravelAnchorFix] Используется BatchingFontRenderer. Ширина текста '{}' = {}", text, width);
         } else {
             width = vanillaFr.getStringWidth(text);
-            LOG.debug("[TravelAnchorFix] Используется ванильный FontRenderer. String width: {}", width);
+            LOG.debug("[TravelAnchorFix] Используется ванильный FontRenderer. Ширина текста '{}' = {}", text, width);
         }
 
         int half = width / 2;
 
+        // Фон под текст
         RenderUtil.drawRect(-half - 2, -2, half + 2, 9, 0x80000000);
 
+        // Сам текст
         if (batchingFr != null) {
-            batchingFr.drawString(-half, 0, 0xFFFFFFFF, false, false, text, 0, text.length());
+            batchingFr.drawString(text, -half, 0, 0xFFFFFFFF, false, false, 0, text.length());
         } else {
             vanillaFr.drawString(text, -half, 0, 0xFFFFFFFF);
         }
 
-        LOG.debug("[TravelAnchorFix] Anchor '{}' rendered at {}, {}, {}", text, x, y, z);
-
         GL11.glPopMatrix();
     }
 
-    private IIcon getSelectedOverlayIcon() {
+    // --- Отладка overlay иконок ---
+    private Object getSelectedOverlayIcon() {
         try {
-            IIcon icon = EnderIO.blockTravelPlatform.getSelectedOverlayIcon();
-            LOG.debug("[TravelAnchorFix] selectedOverlayIcon is {}", (icon != null ? "NOT null" : "null"));
+            java.lang.reflect.Field f = crazypants.enderio.teleport.anchor.BlockTravelAnchor.class.getDeclaredField("selectedOverlayIcon");
+            f.setAccessible(true);
+            Object icon = f.get(null);
+            LOG.debug("[TravelAnchorFix] getSelectedOverlayIcon() = {}", icon);
             return icon;
-        } catch (Throwable t) {
-            LOG.error("[TravelAnchorFix] Ошибка доступа к selectedOverlayIcon", t);
+        } catch (Exception e) {
+            LOG.error("[TravelAnchorFix] Ошибка при доступе к selectedOverlayIcon", e);
             return null;
         }
     }
 
-    private IIcon getHighlightOverlayIcon() {
+    private Object getHighlightOverlayIcon() {
         try {
-            IIcon icon = EnderIO.blockTravelPlatform.getHighlightOverlayIcon();
-            LOG.debug("[TravelAnchorFix] highlightOverlayIcon is {}", (icon != null ? "NOT null" : "null"));
+            java.lang.reflect.Field f = crazypants.enderio.teleport.anchor.BlockTravelAnchor.class.getDeclaredField("highlightOverlayIcon");
+            f.setAccessible(true);
+            Object icon = f.get(null);
+            LOG.debug("[TravelAnchorFix] getHighlightOverlayIcon() = {}", icon);
             return icon;
-        } catch (Throwable t) {
-            LOG.error("[TravelAnchorFix] Ошибка доступа к highlightOverlayIcon", t);
+        } catch (Exception e) {
+            LOG.error("[TravelAnchorFix] Ошибка при доступе к highlightOverlayIcon", e);
             return null;
         }
     }
