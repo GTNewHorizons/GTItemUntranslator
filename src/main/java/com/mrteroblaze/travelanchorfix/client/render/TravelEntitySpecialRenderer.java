@@ -367,3 +367,62 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
         return getHighlightOverlayIcon();
     }
 }
+
+
+/* Inserted fixed label rendering block:
+
+// --- Рендер рамки и текста ---
+GL11.glPushMatrix();
+
+// Позиция в центре блока, чуть выше
+GL11.glTranslatef((float) x + 0.5F, (float) y + 1.5F, (float) z + 0.5F);
+
+// Billboard — разворот к камере
+GL11.glNormal3f(0.0F, 1.0F, 0.0F);
+GL11.glRotatef(-RenderManager.instance.playerViewY, 0.0F, 1.0F, 0.0F);
+GL11.glRotatef(RenderManager.instance.playerViewX, 1.0F, 0.0F, 0.0F);
+
+// Масштаб (настраиваем при необходимости)
+float scale = 0.016666668F * 1.6F;
+GL11.glScalef(-scale, -scale, scale);
+
+// Отключаем глубину, чтобы текст был виден сквозь стены
+GL11.glDisable(GL11.GL_DEPTH_TEST);
+GL11.glDepthMask(false);
+
+// Получаем текст
+String text = te.getLabel();
+if (text != null && !text.isEmpty()) {
+    // Считаем ширину текста
+    int textW = (bfr != null) ? bfr.getStringWidth(text) : fr.getStringWidth(text);
+    int boxWidth = textW + 4;
+
+    // Рисуем рамку
+    Tessellator tes = Tessellator.instance;
+    GL11.glDisable(GL11.GL_TEXTURE_2D);
+    tes.startDrawingQuads();
+    tes.setColorRGBA_F(0.0F, 0.0F, 0.0F, 0.5F);
+    tes.addVertex(-boxWidth / 2, -1, 0.0D);
+    tes.addVertex(-boxWidth / 2, 8, 0.0D);
+    tes.addVertex(boxWidth / 2, 8, 0.0D);
+    tes.addVertex(boxWidth / 2, -1, 0.0D);
+    tes.draw();
+    GL11.glEnable(GL11.GL_TEXTURE_2D);
+
+    // Рисуем текст через батч
+    if (bfr != null) {
+        bfr.begin();
+        bfr.drawString(1, 1, 0x80000000, false, false, text, 0, text.length()); // тень
+        bfr.drawString(0, 0, 0xFFFFFFFF, false, false, text, 0, text.length()); // основной текст
+        bfr.end();
+    } else {
+        fr.drawString(text, -textW / 2, 0, 0xFFFFFFFF);
+    }
+}
+
+// Возвращаем OpenGL в нормальное состояние
+GL11.glDepthMask(true);
+GL11.glEnable(GL11.GL_DEPTH_TEST);
+GL11.glPopMatrix();
+
+*/
