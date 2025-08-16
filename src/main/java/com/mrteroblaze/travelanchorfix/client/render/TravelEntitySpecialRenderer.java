@@ -37,6 +37,17 @@ import crazypants.enderio.teleport.TravelController;
 @SideOnly(Side.CLIENT)
 public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 	
+	private static IIcon getSelectedOverlayIcon() {
+    try {
+        java.lang.reflect.Field f = BlockTravelAnchor.class.getDeclaredField("selectedOverlayIcon");
+        f.setAccessible(true);
+        return (IIcon) f.get(EnderIO.blockTravelPlatform);
+    } catch (Throwable t) {
+        t.printStackTrace();
+        return null;
+    }
+}
+	
 	private BatchingFontRenderer travelAnchorBFR = null;
 
 private BatchingFontRenderer ensureTravelAnchorBFR(FontRenderer fr) {
@@ -329,8 +340,7 @@ private BatchingFontRenderer ensureTravelAnchorBFR(FontRenderer fr) {
     }
 
     public IIcon getSelectedIcon() {
-        return EnderIO.blockTravelPlatform.selectedOverlayIcon;
-    }
+        return getSelectedOverlayIcon();    }
 
     public Vector4f getHighlightColor() {
         return highlightColor;
