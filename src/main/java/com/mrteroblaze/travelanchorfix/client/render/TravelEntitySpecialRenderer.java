@@ -134,6 +134,24 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
     }
 
     private EntityItem ei;
+	
+	    private void renderEntity(RenderManager rm, EntityItem ei, ItemStack item, boolean isBlock, float scale) {
+        if (ei == null) {
+            ei = new EntityItem(Minecraft.getMinecraft().theWorld, 0, 0, 0, item);
+        } else {
+            ei.setEntityItemStack(item);
+        }
+        ei.hoverStart = 0f;
+
+        GL11.glPushMatrix();
+        if (isBlock) {
+            GL11.glTranslatef(0, -0.1f, 0);
+            GL11.glScalef(0.6f, 0.6f, 0.6f);
+        }
+        rm.renderEntityWithPosYaw(ei, 0, 0, 0, 0, 0);
+        GL11.glPopMatrix();
+    }
+
 
     private void renderLabel(TileEntity tileentity, double x, double y, double z, ITravelAccessable ta, double sf) {
         float globalScale = (float) sf;
