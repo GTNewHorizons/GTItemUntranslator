@@ -1,141 +1,72 @@
-package com.mrteroblaze.travelanchorfix.client.render;
+package crazypants.enderio.teleport.anchor;
+
+import java.awt.Rectangle;
+import java.util.List;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.entity.item.EntityItem;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.IBlockAccess;
 
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
-import org.lwjgl.opengl.GL14;
 
-import com.enderio.core.client.render.BoundingBox;
-import com.enderio.core.client.render.CubeRenderer;
-import com.enderio.core.client.render.RenderUtil;
-import com.enderio.core.common.util.BlockCoord;
-import com.enderio.core.common.util.Util;
-import com.enderio.core.common.vecmath.Vector3d;
-import com.enderio.core.common.vecmath.Vector3f;
-import com.enderio.core.common.vecmath.Vector4f;
-
-import cpw.mods.fml.relauncher.Side;
-import cpw.mods.fml.relauncher.SideOnly;
 import crazypants.enderio.EnderIO;
-import crazypants.enderio.api.teleport.ITravelAccessable;
-import crazypants.enderio.api.teleport.TravelSource;
 import crazypants.enderio.teleport.TravelController;
-import crazypants.enderio.teleport.anchor.BlockTravelAnchor;
+import crazypants.util.RenderUtil;
 
-@SideOnly(Side.CLIENT)
-public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
-
-    private static IIcon getSelectedOverlayIcon() {
-        try {
-            java.lang.reflect.Field f = BlockTravelAnchor.class.getDeclaredField("selectedOverlayIcon");
-            f.setAccessible(true);
-            return (IIcon) f.get(EnderIO.blockTravelPlatform);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return null;
-        }
-    }
-
-    private static IIcon getHighlightOverlayIcon() {
-        try {
-            java.lang.reflect.Field f = BlockTravelAnchor.class.getDeclaredField("highlightOverlayIcon");
-            f.setAccessible(true);
-            return (IIcon) f.get(EnderIO.blockTravelPlatform);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return null;
-        }
-    }
-
-    private final Vector4f selectedColor;
-    private final Vector4f highlightColor;
-
-    public TravelEntitySpecialRenderer() {
-        this(new Vector4f(1, 0.25f, 0, 0.5f), new Vector4f(1, 1, 1, 0.25f));
-    }
-
-    public TravelEntitySpecialRenderer(Vector4f selectedColor, Vector4f highlightColor) {
-        this.selectedColor = selectedColor;
-        this.highlightColor = highlightColor;
-    }
-
-    @Override
-    public void renderTileEntityAt(TileEntity tileentity, double x, double y, double z, float f) {
-        if (!(tileentity instanceof ITravelAccessable)) {
-            return;
-        }
-
-        final CubeRenderer cr = CubeRenderer.get();
-        final Tessellator tessellator = Tessellator.instance;
-
-        Vector3d eye = Util.getEyePositionEio(Minecraft.getMinecraft().thePlayer);
-        Vector3d loc = new Vector3d(tileentity.xCoord + 0.5, tileentity.yCoord + 0.5, tileentity.zCoord + 0.5);
-        double maxDistance = TravelSource.BLOCK.getMaxDistanceTravelledSq();
-        TravelSource source = TravelController.instance
-            .getTravelItemTravelSource(Minecraft.getMinecraft().thePlayer, false);
-        if (source != null) {
-            maxDistance = source.getMaxDistanceTravelledSq();
-        }
-        if (eye.distanceSquared(loc) > maxDistance) {
-            return;
-        }
-
-        double sf = TravelController.instance.getScaleForCandidate(loc);
-
-        BlockCoord bc = new BlockCoord(tileentity);
-        TravelController.instance.addCandidate(bc);
-
-        Minecraft.getMinecraft().entityRenderer.disableLightmap(0);
-
-        RenderUtil.bindBlockTexture();
-        GL11.glPushAttrib(GL11.GL_ENABLE_BIT | GL11.GL_LIGHTING_BIT);
-
-        GL11.glEnable(GL12.GL_RESCALE_NORMAL);
-
-        GL11.glDisable(GL11.GL_DEPTH_TEST);
-        GL11.glDisable(GL11.GL_LIGHTING);
-
-        GL11.glEnable(GL11.GL_BLEND);
-        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-
-        GL11.glEnable(GL11.GL_CULL_FACE);
-        GL11.glColor3f(1, 1, 1);
-
-        GL11.glPushMatrix();
-        GL11.glTranslated(x, y, z);
-
-        tessellator.startDrawingQuads();
-        renderBlock(tileentity.getWorldObj(), sf);
-        tessellator.draw();
-
-        tessellator.startDrawingQuads();
-        renderOverlay(tileentity, sf);
-        tessellator.draw();
-
-        GL11.glPopMatrix();
-
-        renderLabel(tileentity, x, y, z, (ITravelAccessable) tileentity, sf);
-
-        GL11.glPopAttrib();
-
-        Minecraft.getMinecraft().entityRenderer.enableLightmap(0);
-    }
+public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer<TileTravelAnchor> {
 
     private EntityItem ei;
-	
-	    private void renderEntity(RenderManager rm, EntityItem ei, ItemStack item, boolean isBlock, float scale) {
+
+    @Override
+    public void renderTileEntityAt(TileTravelAnchor te, double x, double y, double z, float partialTick, int destroyStage) {
+        TravelController tc = TravelController.instance;
+
+        if (tc.isBlocked(te)) {
+            return;
+        }
+
+        List<TileTravelAnchor> allAnchors = tc.getAnchorsForPlayer(Minecraft.getMinecraft().thePlayer, false);
+        if (!allAnchors.contains(te)) {
+            return;
+        }
+
+        FontRenderer fr = Minecraft.getMinecraft().fontRenderer;
+        RenderManager rm = RenderManager.instance;
+
+        GL11.glPushMatrix();
+        GL11.glTranslated(x + 0.5, y + 1.5, z + 0.5);
+        GL11.glNormal3f(0.0F, 1.0F, 0.0F);
+        GL11.glRotatef(-rm.playerViewY, 0.0F, 1.0F, 0.0F);
+        GL11.glRotatef(rm.playerViewX, 1.0F, 0.0F, 0.0F);
+        GL11.glScalef(-0.025F, -0.025F, 0.025F);
+        GL11.glDisable(GL11.GL_LIGHTING);
+        GL11.glDepthMask(false);
+        GL11.glDisable(GL11.GL_DEPTH_TEST);
+        GL11.glEnable(GL11.GL_BLEND);
+
+        String toRender = te.getLabel();
+        if (toRender == null || toRender.trim().isEmpty()) {
+            toRender = EnderIO.lang.localize("blockTravelAnchor.defaultName");
+        }
+
+        int textW = fr.getStringWidth(toRender) / 2;
+        fr.drawString(toRender, -textW, 0, 0xFFFFFF, false);
+
+        GL11.glEnable(GL11.GL_DEPTH_TEST);
+        GL11.glDepthMask(true);
+        GL11.glEnable(GL11.GL_LIGHTING);
+        GL11.glDisable(GL11.GL_BLEND);
+
+        GL11.glPopMatrix();
+    }
+
+    private void renderEntity(RenderManager rm, EntityItem ei, ItemStack item, boolean isBlock, float scale) {
         if (ei == null) {
             ei = new EntityItem(Minecraft.getMinecraft().theWorld, 0, 0, 0, item);
         } else {
@@ -152,186 +83,4 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
         GL11.glPopMatrix();
     }
 
-
-    private void renderLabel(TileEntity tileentity, double x, double y, double z, ITravelAccessable ta, double sf) {
-        float globalScale = (float) sf;
-        ItemStack itemLabel = ta.getItemLabel();
-        if (itemLabel != null && itemLabel.getItem() != null) {
-
-            boolean isBlock = itemLabel.getItem() instanceof ItemBlock;
-
-            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_CONSTANT_COLOR);
-            float col = 0.5f;
-            GL14.glBlendColor(col, col, col, col);
-            GL11.glColor4f(1, 1, 1, 1);
-            {
-                GL11.glPushMatrix();
-                GL11.glTranslatef((float) x + 0.5f, (float) y + 0.5f, (float) z + 0.5f);
-                if (!isBlock && Minecraft.getMinecraft().gameSettings.fancyGraphics) {
-                    RenderUtil.rotateToPlayer();
-                }
-
-                {
-                    GL11.glPushMatrix();
-                    GL11.glScalef(globalScale, globalScale, globalScale);
-                    if (!isBlock) {
-                        GL11.glScalef(0.5f, 0.5f, 0.5f);
-                    }
-
-                    renderEntity(RenderManager.instance, ei, itemLabel, isBlock, globalScale);
-
-                    GL11.glPopMatrix();
-                }
-
-                if (isBlock) {
-                    GL11.glPushMatrix();
-                    GL11.glScalef(globalScale, globalScale, globalScale);
-                    Vector3f pos = new Vector3f(0, -1.2f, 0);
-                    RenderUtil.renderBillboardQuad(0.4f, 0.4f, 0.4f, EnderIO.blockTravelPlatform.getIcon(0, 0));
-                    GL11.glPopMatrix();
-                }
-
-                GL11.glPopMatrix();
-            }
-        }
-
-        String toRender = ta.getLabel();
-        if (toRender != null && toRender.trim().length() > 0) {
-            GL11.glColor4f(1, 1, 1, 1);
-            Vector4f bgCol = RenderUtil.DEFAULT_TEXT_BG_COL;
-            if (TravelController.instance.isBlockSelected(new BlockCoord(tileentity))) {
-                bgCol = new Vector4f(selectedColor.x, selectedColor.y, selectedColor.z, selectedColor.w);
-            }
-
-            {
-                GL11.glPushMatrix();
-                GL11.glTranslatef((float) x + 0.5f, (float) y + 0.5f, (float) z + 0.5f);
-                {
-                    GL11.glPushMatrix();
-                    GL11.glScalef(globalScale, globalScale, globalScale);
-                    Vector3f pos = new Vector3f(0, 1.2f, 0);
-                    float size = 0.5f;
-                    
-                    // === TravelAnchorFix: отрисовка текста через ванильный FontRenderer ===
-                    {
-                        final Minecraft mc = Minecraft.getMinecraft();
-                        final FontRenderer fr = mc.fontRenderer;
-
-                        GL11.glPushMatrix();
-                        try {
-                            // Повороты к камере
-                            RenderManager rm = RenderManager.instance;
-                            RenderUtil.rotateToPlayer();
-
-                            // Масштаб
-                            final float s = 0.025F * (size * 2.0F);
-                            GL11.glScalef(-s, -s, s);
-
-                            // GL-состояния
-                            GL11.glDisable(GL11.GL_LIGHTING);
-                            GL11.glDepthMask(false);
-                            GL11.glDisable(GL11.GL_DEPTH_TEST);
-                            GL11.glEnable(GL11.GL_BLEND);
-                            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-
-                            // Вычисляем ширину/высоту текста
-                            final int textW = fr.getStringWidth(toRender);
-                            final int textH = fr.FONT_HEIGHT;
-
-                            // Фон
-                            GL11.glDisable(GL11.GL_TEXTURE_2D);
-                            GL11.glColor4f(bgCol.x, bgCol.y, bgCol.z, bgCol.w);
-                            final float padX = 2f, padY = 1f;
-                            final float x0 = -textW / 2f - padX;
-                            final float y0 = -padY;
-                            final float x1 =  textW / 2f + padX;
-                            final float y1 =  textH + padY;
-
-                            Tessellator t = Tessellator.instance;
-                            t.startDrawingQuads();
-                            t.addVertex(x0, y0, 0);
-                            t.addVertex(x0, y1, 0);
-                            t.addVertex(x1, y1, 0);
-                            t.addVertex(x1, y0, 0);
-                            t.draw();
-
-                            GL11.glEnable(GL11.GL_TEXTURE_2D);
-                            GL11.glColor4f(1f, 1f, 1f, 1f);
-
-                            // Биндим текстуру шрифта (на всякий случай)
-                            try {
-                                java.lang.reflect.Field fLoc = FontRenderer.class.getDeclaredField("locationFontTexture");
-                                fLoc.setAccessible(true);
-                                ResourceLocation loc = (ResourceLocation) fLoc.get(fr);
-                                if (loc != null) {
-                                    mc.getTextureManager().bindTexture(loc);
-                                }
-                            } catch (Throwable ignored) {}
-
-                            // Тень + текст
-                            final int baseX = -textW / 2;
-                            fr.drawString(toRender, baseX + 1, 1, 0x80000000);
-                            fr.drawString(toRender, baseX, 0, 0xFFFFFFFF);
-
-                            // Возврат GL-состояний
-                            GL11.glEnable(GL11.GL_DEPTH_TEST);
-                            GL11.glDepthMask(true);
-                            GL11.glEnable(GL11.GL_LIGHTING);
-                            GL11.glDisable(GL11.GL_BLEND);
-                        } finally {
-                            GL11.glPopMatrix();
-                        }
-                    }
-                    // === /TravelAnchorFix ===
-                    GL11.glPopMatrix();
-                }
-
-                GL11.glPopMatrix();
-            }
-        }
-    }
-
-    private void renderOverlay(TileEntity tileentity, double sf) {
-        Tessellator tessellator = Tessellator.instance;
-
-        Vector4f col = getSelectedColor();
-        IIcon icon = getSelectedIcon();
-        BlockCoord bc = new BlockCoord(tileentity);
-        if (TravelController.instance.isBlockSelected(bc)) {
-            GL11.glColor4f(col.x, col.y, col.z, col.w);
-            RenderUtil.addVerticesToTessellator(BoundingBox.UNIT_CUBE.scale(sf, sf, sf), icon);
-            GL11.glColor4f(1, 1, 1, 1);
-        }
-
-        col = getHighlightColor();
-        icon = getHighlightIcon();
-        if (TravelController.instance.isBlockHighlighted(bc)) {
-            GL11.glColor4f(col.x, col.y, col.z, col.w);
-            RenderUtil.addVerticesToTessellator(BoundingBox.UNIT_CUBE.scale(sf, sf, sf), icon);
-            GL11.glColor4f(1, 1, 1, 1);
-        }
-    }
-
-    private void renderBlock(IBlockAccess ba, double sf) {
-        GL11.glColor4f(1, 1, 1, 1);
-        RenderUtil.setColorRGBA_F(1, 1, 1, 0.75f);
-        CubeRenderer.get()
-            .render(BoundingBox.UNIT_CUBE.scale(sf, sf, sf), EnderIO.blockTravelPlatform.getIcon(0, 0));
-    }
-
-    public Vector4f getSelectedColor() {
-        return selectedColor;
-    }
-
-    public IIcon getSelectedIcon() {
-        return getSelectedOverlayIcon();
-    }
-
-    public Vector4f getHighlightColor() {
-        return highlightColor;
-    }
-
-    public IIcon getHighlightIcon() {
-        return getHighlightOverlayIcon();
-    }
 }
