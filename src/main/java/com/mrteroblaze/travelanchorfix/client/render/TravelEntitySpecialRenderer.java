@@ -1,18 +1,20 @@
 package com.mrteroblaze.travelanchorfix.client.render;
 
-import com.enderio.core.client.render.RenderUtil;
-import com.enderio.core.common.vecmath.Vector3d;
-import crazypants.enderio.EnderIO;
-import crazypants.enderio.teleport.anchor.BlockTravelAnchor;
-import crazypants.enderio.teleport.anchor.TileTravelAnchor;
-import cpw.mods.fml.client.registry.ClientRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIcon;
+
 import org.lwjgl.opengl.GL11;
+
+import com.enderio.core.common.vecmath.Vector3d;
+
+import cpw.mods.fml.client.registry.ClientRegistry;
+import crazypants.enderio.EnderIO;
+import crazypants.enderio.teleport.anchor.BlockTravelAnchor;
+import crazypants.enderio.teleport.anchor.TileTravelAnchor;
 
 public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
 
