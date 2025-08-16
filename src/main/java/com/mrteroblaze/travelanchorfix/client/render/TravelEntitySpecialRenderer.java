@@ -245,7 +245,7 @@ public class TravelEntitySpecialRenderer extends TileEntitySpecialRenderer {
                                 } catch (Throwable ignored) {}
 
                                 // Рисуем текст ванильным FontRenderer (с тенью и без)
-                                final float baseX = -textW / 2f;
+                                final int baseX = -textW / 2;
                                 // Тень
                                 GL11.glTranslatef(0.0F, 0.0F, 0.03F); // Немного вперёд для тени
                                 fr.drawString(toRender, baseX + 1, 1, 0x80000000); // тень
