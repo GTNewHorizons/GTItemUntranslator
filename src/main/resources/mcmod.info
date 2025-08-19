@@ -1,16 +1,22 @@
-[
-  {
-    "modid": "travelanchorfix",
-    "name": "Travel Anchor Fix",
-    "description": "Fixes Travel Anchor label rendering with shaders by using Angelica's batched font renderer.",
-    "version": "1.0.0",
-    "mcversion": "1.7.10",
-    "url": "",
-    "authorList": ["mrteroblaze"],
-    "credits": "",
-    "logoFile": "",
-    "requiredMods": [],
-    "dependencies": [],
-    "useDependencyInformation": true
-  }
-]
+{
+	"modListVersion": 2,
+	"modList": [{
+		"modid": "${modId}",
+		"name": "${modName}",
+		"description": "Fixes Travel Anchor label rendering with Angelica shaders by using vanilla font renderer.",
+		"version": "${modVersion}",
+		"mcversion": "${minecraftVersion}",
+		"url": "https://github.com/mrTeroblaze/TravelAnchorFix",
+		"updateUrl": "",
+		"authorList": ["mrTeroblaze via ChatGPT and Qwen"],
+		"credits": "",
+		"logoFile": "",
+		"screenshots": [],
+		"parent": "",
+		"requiredMods": [],
+		"dependencies": [],
+		"dependants": [],
+		"useDependencyInformation": true
+	}]
+}
+
