@@ -30,7 +30,7 @@ public class TooltipEventHandler {
         if (DEBUG) System.err.println(msg);
     }
 
-    // Флаг для /gtip on|off
+    // Flag for /gtip on|off
     public static boolean TOOLTIPS_ENABLED = true;
 
     // === Конфигурация префиксов ===
@@ -68,7 +68,7 @@ public class TooltipEventHandler {
         return null;
     }
 
-    // === Универсальная таблица шаблонов для OreDict ===
+    // === Universal Pattern Table for OreDict (BartWorks) ===
     private static final Map<String, String> BW_OREDICT_TEMPLATES = new HashMap<>();
     static {
         BW_OREDICT_TEMPLATES.put("dust", "%material Dust");
@@ -77,7 +77,6 @@ public class TooltipEventHandler {
         BW_OREDICT_TEMPLATES.put("crushed", "Crushed %material Ore");
         BW_OREDICT_TEMPLATES.put("crushedPurified", "Purified Crushed %material Ore");
         BW_OREDICT_TEMPLATES.put("crushedCentrifuged", "Centrifuged Crushed %material Ore");
-
         BW_OREDICT_TEMPLATES.put("ingot", "%material Ingot");
         BW_OREDICT_TEMPLATES.put("nugget", "%material Nugget");
         BW_OREDICT_TEMPLATES.put("plate", "%material Plate");
@@ -86,36 +85,27 @@ public class TooltipEventHandler {
         BW_OREDICT_TEMPLATES.put("block", "%material Block");
         BW_OREDICT_TEMPLATES.put("casing", "%material Casing");
         BW_OREDICT_TEMPLATES.put("ore", "%material Ore");
-
         BW_OREDICT_TEMPLATES.put("rawOre", "Raw %material Ore");
-
         BW_OREDICT_TEMPLATES.put("gem", "%material");
         BW_OREDICT_TEMPLATES.put("gemExquisite", "Exquisite %material");
         BW_OREDICT_TEMPLATES.put("gemFlawless", "Flawless %material");
         BW_OREDICT_TEMPLATES.put("gemFlawed", "Flawed %material");
         BW_OREDICT_TEMPLATES.put("gemChipped", "Chipped %material");
-
         BW_OREDICT_TEMPLATES.put("foil", "%material Foil");
         BW_OREDICT_TEMPLATES.put("stick", "%material Stick");
         BW_OREDICT_TEMPLATES.put("stickLong", "Long %material Stick");
-
         BW_OREDICT_TEMPLATES.put("toolHeadWrench", "%material Wrench Head");
         BW_OREDICT_TEMPLATES.put("toolHeadHammer", "%material Hammer Head");
         BW_OREDICT_TEMPLATES.put("toolHeadSaw", "%material Saw Head");
-
         BW_OREDICT_TEMPLATES.put("turbineBlade", "%material Turbine Blade");
-
         BW_OREDICT_TEMPLATES.put("gearGt", "%material Gear");
         BW_OREDICT_TEMPLATES.put("gearGtSmall", "Small %material Gear");
-
         BW_OREDICT_TEMPLATES.put("bolt", "%material Bolt");
         BW_OREDICT_TEMPLATES.put("screw", "%material Screw");
         BW_OREDICT_TEMPLATES.put("ring", "%material Ring");
         BW_OREDICT_TEMPLATES.put("spring", "%material Spring");
         BW_OREDICT_TEMPLATES.put("springSmall", "Small %material Spring");
-
         BW_OREDICT_TEMPLATES.put("rotor", "%material Rotor");
-
         BW_OREDICT_TEMPLATES.put("cell", "%material Cell");
         BW_OREDICT_TEMPLATES.put("cellMolten", "Molten %material Cell");
         BW_OREDICT_TEMPLATES.put("capsule", "%material Capsule");
@@ -128,7 +118,7 @@ public class TooltipEventHandler {
             .trim();
     }
 
-    // === Получение оригинального английского имени ===
+    // === Getting the original English name ===
     private String getOriginalEnglishName(ItemStack itemStack, String localizationKey) {
         if (itemStack == null) {
             return null;
@@ -167,7 +157,7 @@ public class TooltipEventHandler {
                 return null;
             }
 
-            // === 1. Lang ===
+            // === 1. Lang file===
             if (localizationKey != null && !localizationKey.isEmpty()) {
                 String rawTemplate = OriginalLanguageStore.getOriginal(localizationKey);
                 if (rawTemplate != null && !rawTemplate.equals(localizationKey)) {
@@ -197,7 +187,7 @@ public class TooltipEventHandler {
                 }
             }
 
-            // === 2. Werkstoff casing ===
+            // === 2. Werkstoff casings ===
             if (localizationKey != null && (localizationKey.startsWith("bw.werkstoffblockscasing.")
                 || localizationKey.startsWith("bw.werkstoffblockscasingadvanced."))) {
                 int meta = itemStack.getItemDamage();
@@ -257,7 +247,7 @@ public class TooltipEventHandler {
         return null;
     }
 
-    // === Основной обработчик тултипов ===
+    // === Main Tooltip Handler ===
     @SubscribeEvent
     public void onItemTooltip(ItemTooltipEvent event) {
         if (!TOOLTIPS_ENABLED) return;
@@ -280,7 +270,7 @@ public class TooltipEventHandler {
                 return;
             }
 
-            // === Обычные предметы ===
+            // === Regular items ===
             String unloc = itemStack.getUnlocalizedName();
             PrefixRule rule = matchPrefix(unloc);
             if (rule != null) {

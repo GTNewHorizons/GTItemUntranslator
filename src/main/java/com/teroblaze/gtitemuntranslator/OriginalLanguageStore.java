@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class OriginalLanguageStore {
 
-    private static final String DEBUG_KEY = null; // Укажите сюда ключ для точечной отладки
+    private static final String DEBUG_KEY = null; // Specify the key for  debugging
     private static final Map<String, String> ORIGINAL_ENGLISH = new HashMap<>();
     private static boolean isLoaded = false;
 
@@ -23,7 +23,7 @@ public class OriginalLanguageStore {
 
         System.out.println("[GT Item Untranslator] Initializing language store...");
 
-        // === Lang-файлы из jar (en_US.lang и аналоги) ===
+        // === Lang-files from jar (en_US.lang and others) ===
         String[] langPaths = { "/assets/gregtech/lang/en_US.lang", "/assets/bartworks/lang/en_US.lang",
             "/assets/gtnhlanth/lang/en_US.lang", "/assets/miscutils/lang/en_US.lang",
             "/assets/tectech/lang/en_US.lang" };
@@ -47,7 +47,7 @@ public class OriginalLanguageStore {
             }
         }
 
-        // === GregTech.lang из корня .minecraft ===
+        // === Loading GregTech.lang from .minecraft folder ===
         try {
             File mcDir = new File(".");
             File gtLangFile = new File(mcDir, "GregTech.lang");

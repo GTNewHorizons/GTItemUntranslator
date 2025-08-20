@@ -35,6 +35,6 @@ public class CommandGTIP extends CommandBase {
 
     @Override
     public int getRequiredPermissionLevel() {
-        return 0; // доступна всем игрокам
+        return 0; // available to all players
     }
 }
