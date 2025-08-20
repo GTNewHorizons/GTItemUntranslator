@@ -24,14 +24,9 @@ public class OriginalLanguageStore {
 
         System.out.println("[GT Item Untranslator] Initializing language store...");
         // Пути к оригинальным .lang файлам.
-        String[] langPaths = {
-            "/assets/gregtech/lang/en_US.lang",
-            "/assets/gregtech/lang/GregTech.lang",
-            "/assets/bartworks/lang/en_US.lang",
-            "/assets/gtnhlanth/lang/en_US.lang",
-            "/assets/miscutils/lang/en_US.lang",
-            "/assets/tectech/lang/en_US.lang"
-        };
+        String[] langPaths = { "/assets/gregtech/lang/en_US.lang", "/assets/gregtech/lang/GregTech.lang",
+            "/assets/bartworks/lang/en_US.lang", "/assets/gtnhlanth/lang/en_US.lang",
+            "/assets/miscutils/lang/en_US.lang", "/assets/tectech/lang/en_US.lang" };
 
         int totalLoaded = 0;
         for (String langPath : langPaths) {
@@ -58,13 +53,21 @@ public class OriginalLanguageStore {
 
                         int eqPos = processedLine.indexOf('=');
                         if (eqPos > 0) {
-                            String key = processedLine.substring(0, eqPos).trim();
+                            String key = processedLine.substring(0, eqPos)
+                                .trim();
                             String value = processedLine.substring(eqPos + 1);
 
                             boolean isDebugKey = DEBUG_KEY != null && DEBUG_KEY.equals(key);
                             if (isDebugKey) {
-                                System.out.println("[GT Item Untranslator] [LOAD DEBUG] " + langPath + " line " + lineNumber
-                                    + " -> key='" + key + "', value='" + value + "'");
+                                System.out.println(
+                                    "[GT Item Untranslator] [LOAD DEBUG] " + langPath
+                                        + " line "
+                                        + lineNumber
+                                        + " -> key='"
+                                        + key
+                                        + "', value='"
+                                        + value
+                                        + "'");
                             }
 
                             ORIGINAL_ENGLISH.put(key, value);
@@ -81,7 +84,8 @@ public class OriginalLanguageStore {
         }
 
         isLoaded = true;
-        System.out.println("[GT Item Untranslator] Initialization complete. Total unique entries: " + ORIGINAL_ENGLISH.size());
+        System.out.println(
+            "[GT Item Untranslator] Initialization complete. Total unique entries: " + ORIGINAL_ENGLISH.size());
     }
 
     public static boolean isInitialized() {
@@ -90,6 +94,7 @@ public class OriginalLanguageStore {
 
     /**
      * Получает оригинальное английское значение по ключу.
+     * 
      * @param key Ключ локализации (например, "gt.metaitem.01.11305.name").
      * @return Оригинальное значение из .lang файла или сам ключ, если не найден.
      */

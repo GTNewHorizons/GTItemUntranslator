@@ -1,35 +1,41 @@
 package com.teroblaze.gtitemuntranslator;
 
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.event.entity.player.ItemTooltipEvent;
+import java.util.HashMap;
+import java.util.Map;
+
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.oredict.OreDictionary;
 
-import gregtech.api.util.GTLanguageManager;
-import gregtech.api.util.GTOreDictUnificator;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import gregtech.api.GregTechAPI;
 import gregtech.api.enums.Materials;
 import gregtech.api.objects.ItemData;
 import gregtech.api.objects.MaterialStack;
-import gregtech.api.GregTechAPI;
-
-import net.minecraftforge.oredict.OreDictionary;
-
-import java.util.HashMap;
-import java.util.Map;
+import gregtech.api.util.GTLanguageManager;
+import gregtech.api.util.GTOreDictUnificator;
 
 public class TooltipEventHandler {
 
     // === DEBUG CONTROL ===
     private static final boolean DEBUG = false;
-    private static void debug(String msg) { if (DEBUG) System.out.println(msg); }
-    private static void error(String msg) { if (DEBUG) System.err.println(msg); }
+
+    private static void debug(String msg) {
+        if (DEBUG) System.out.println(msg);
+    }
+
+    private static void error(String msg) {
+        if (DEBUG) System.err.println(msg);
+    }
 
     // Флаг для /gtip on|off
     public static boolean TOOLTIPS_ENABLED = true;
 
     // === Конфигурация префиксов ===
     private static class PrefixRule {
+
         String prefix;
         boolean requireDotName;
 
@@ -39,38 +45,19 @@ public class TooltipEventHandler {
         }
     }
 
-    private static final PrefixRule[] PREFIX_RULES = {
-        new PrefixRule("gt.bwMetaGenerated", false),
-        new PrefixRule("gt.", true),         
-        new PrefixRule("gtplusplus.fluid.", false),
-        new PrefixRule("gtplusplus.material.", false),
-        new PrefixRule("gtplusplus.comb.", false),
-        new PrefixRule("gtplusplus.drop.", false),
-        new PrefixRule("gtplusplus.pollen.", false),
-        new PrefixRule("gtplusplus.propolis.", false),
-        new PrefixRule("gtplusplus.", true),
-        new PrefixRule("MU-metaitem.", true),
-        new PrefixRule("miscutils.", true),
-        new PrefixRule("item.", true),
-        new PrefixRule("comb.", false),
-        new PrefixRule("bw.", false),
-        new PrefixRule("\"gtplusplus.item", true),
-        new PrefixRule("\"gtplusplus.material.", false),
-        new PrefixRule("\"fluid.", false),
-        new PrefixRule("fluid.", false),
-        new PrefixRule("Material.", false),
-        new PrefixRule("\"Material.", false),
-        new PrefixRule("defc.casing.tip.", false),
-        new PrefixRule("defc.", true),
-        new PrefixRule("propolis.", false),
-        new PrefixRule("\"Saccharomyces.", false),
-        new PrefixRule("\"Pseudomonas.", false),
-        new PrefixRule("drop.", false),
-        new PrefixRule("block.", true),
-        new PrefixRule("labModule.", true),
-        new PrefixRule("tile.", true),
-        new PrefixRule("GT_LESU.", true)
-    };
+    private static final PrefixRule[] PREFIX_RULES = { new PrefixRule("gt.bwMetaGenerated", false),
+        new PrefixRule("gt.", true), new PrefixRule("gtplusplus.fluid.", false),
+        new PrefixRule("gtplusplus.material.", false), new PrefixRule("gtplusplus.comb.", false),
+        new PrefixRule("gtplusplus.drop.", false), new PrefixRule("gtplusplus.pollen.", false),
+        new PrefixRule("gtplusplus.propolis.", false), new PrefixRule("gtplusplus.", true),
+        new PrefixRule("MU-metaitem.", true), new PrefixRule("miscutils.", true), new PrefixRule("item.", true),
+        new PrefixRule("comb.", false), new PrefixRule("bw.", false), new PrefixRule("\"gtplusplus.item", true),
+        new PrefixRule("\"gtplusplus.material.", false), new PrefixRule("\"fluid.", false),
+        new PrefixRule("fluid.", false), new PrefixRule("Material.", false), new PrefixRule("\"Material.", false),
+        new PrefixRule("defc.casing.tip.", false), new PrefixRule("defc.", true), new PrefixRule("propolis.", false),
+        new PrefixRule("\"Saccharomyces.", false), new PrefixRule("\"Pseudomonas.", false),
+        new PrefixRule("drop.", false), new PrefixRule("block.", true), new PrefixRule("labModule.", true),
+        new PrefixRule("tile.", true), new PrefixRule("GT_LESU.", true) };
 
     private PrefixRule matchPrefix(String key) {
         for (PrefixRule rule : PREFIX_RULES) {
@@ -137,7 +124,8 @@ public class TooltipEventHandler {
 
     private String prettifyMaterialName(String name) {
         if (name == null || name.isEmpty()) return name;
-        return name.replaceAll("([a-z])([A-Z])", "$1 $2").trim();
+        return name.replaceAll("([a-z])([A-Z])", "$1 $2")
+            .trim();
     }
 
     // === Получение оригинального английского имени ===
@@ -210,11 +198,11 @@ public class TooltipEventHandler {
             }
 
             // === 2. Werkstoff casing ===
-            if (localizationKey != null &&
-                (localizationKey.startsWith("bw.werkstoffblockscasing.") ||
-                 localizationKey.startsWith("bw.werkstoffblockscasingadvanced."))) {
+            if (localizationKey != null && (localizationKey.startsWith("bw.werkstoffblockscasing.")
+                || localizationKey.startsWith("bw.werkstoffblockscasingadvanced."))) {
                 int meta = itemStack.getItemDamage();
-                bartworks.system.material.Werkstoff w = bartworks.system.material.Werkstoff.werkstoffHashMap.get((short) meta);
+                bartworks.system.material.Werkstoff w = bartworks.system.material.Werkstoff.werkstoffHashMap
+                    .get((short) meta);
                 if (w != null) {
                     String matName = w.getDefaultName();
                     return localizationKey.startsWith("bw.werkstoffblockscasingadvanced.")
@@ -230,12 +218,17 @@ public class TooltipEventHandler {
                     String oreName = OreDictionary.getOreName(id);
                     for (Map.Entry<String, String> entry : BW_OREDICT_TEMPLATES.entrySet()) {
                         if (oreName.startsWith(entry.getKey())) {
-                            String material = prettifyMaterialName(oreName.substring(entry.getKey().length()));
-                            return entry.getValue().replace("%material", material);
+                            String material = prettifyMaterialName(
+                                oreName.substring(
+                                    entry.getKey()
+                                        .length()));
+                            return entry.getValue()
+                                .replace("%material", material);
                         }
                     }
                 }
-                bartworks.system.material.Werkstoff w = bartworks.system.material.Werkstoff.werkstoffHashMap.get(itemStack.getItemDamage());
+                bartworks.system.material.Werkstoff w = bartworks.system.material.Werkstoff.werkstoffHashMap
+                    .get(itemStack.getItemDamage());
                 if (w != null) return w.getDefaultName() + " Block";
             }
 
@@ -246,8 +239,12 @@ public class TooltipEventHandler {
                     String oreName = OreDictionary.getOreName(id);
                     for (Map.Entry<String, String> entry : BW_OREDICT_TEMPLATES.entrySet()) {
                         if (oreName.startsWith(entry.getKey())) {
-                            String material = prettifyMaterialName(oreName.substring(entry.getKey().length()));
-                            return entry.getValue().replace("%material", material);
+                            String material = prettifyMaterialName(
+                                oreName.substring(
+                                    entry.getKey()
+                                        .length()));
+                            return entry.getValue()
+                                .replace("%material", material);
                         }
                     }
                 }
@@ -272,7 +269,10 @@ public class TooltipEventHandler {
             // === Fluids ===
             if (itemStack.getItem() instanceof gregtech.common.items.ItemFluidDisplay) {
                 int meta = itemStack.getItemDamage();
-                debug("[Tooltip] Fluid item detected: class=" + itemStack.getItem().getClass().getName() + ", meta=" + meta);
+                debug(
+                    "[Tooltip] Fluid item detected: class=" + itemStack.getItem()
+                        .getClass()
+                        .getName() + ", meta=" + meta);
                 String originalEnglishName = getOriginalEnglishName(itemStack, null);
                 if (originalEnglishName != null) {
                     event.toolTip.add(EnumChatFormatting.GRAY + "[EN] " + originalEnglishName);
@@ -287,9 +287,8 @@ public class TooltipEventHandler {
                 String key = rule.requireDotName ? unloc + ".name" : unloc;
                 String originalEnglishName = getOriginalEnglishName(itemStack, key);
                 String currentTranslation = GTLanguageManager.getTranslation(unloc);
-                if (originalEnglishName != null &&
-                    !originalEnglishName.equals(key) &&
-                    !originalEnglishName.equals(currentTranslation)) {
+                if (originalEnglishName != null && !originalEnglishName.equals(key)
+                    && !originalEnglishName.equals(currentTranslation)) {
                     event.toolTip.add(EnumChatFormatting.GRAY + "[EN] " + originalEnglishName);
                 }
             }

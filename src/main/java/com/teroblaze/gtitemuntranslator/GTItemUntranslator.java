@@ -1,23 +1,23 @@
 package com.teroblaze.gtitemuntranslator;
 
-import cpw.mods.fml.common.Mod;
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.event.FMLInitializationEvent;
-import cpw.mods.fml.common.event.FMLPostInitializationEvent;
-import cpw.mods.fml.common.event.FMLServerStartedEvent;
-import cpw.mods.fml.common.event.FMLServerStoppedEvent;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraft.command.ICommandManager;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.server.MinecraftServer;
+import net.minecraftforge.common.MinecraftForge;
+
+import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLPostInitializationEvent;
+import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.FMLServerStartedEvent;
+import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 
 @Mod(
     modid = GTItemUntranslator.MODID,
     name = GTItemUntranslator.NAME,
     version = GTItemUntranslator.VERSION,
     dependencies = "required-after:gregtech",
-    acceptedMinecraftVersions = "[1.7.10]"
-)
+    acceptedMinecraftVersions = "[1.7.10]")
 public class GTItemUntranslator {
 
     public static final String MODID = "gtitemuntranslator";
