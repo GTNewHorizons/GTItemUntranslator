@@ -1,10 +1,10 @@
 package com.teroblaze.gtitemuntranslator;
 
 import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,13 +24,9 @@ public class OriginalLanguageStore {
         System.out.println("[GT Item Untranslator] Initializing language store...");
 
         // === Lang-файлы из jar (en_US.lang и аналоги) ===
-        String[] langPaths = {
-            "/assets/gregtech/lang/en_US.lang",
-            "/assets/bartworks/lang/en_US.lang",
-            "/assets/gtnhlanth/lang/en_US.lang",
-            "/assets/miscutils/lang/en_US.lang",
-            "/assets/tectech/lang/en_US.lang"
-        };
+        String[] langPaths = { "/assets/gregtech/lang/en_US.lang", "/assets/bartworks/lang/en_US.lang",
+            "/assets/gtnhlanth/lang/en_US.lang", "/assets/miscutils/lang/en_US.lang",
+            "/assets/tectech/lang/en_US.lang" };
 
         int totalLoaded = 0;
         for (String langPath : langPaths) {
@@ -57,15 +53,19 @@ public class OriginalLanguageStore {
             File gtLangFile = new File(mcDir, "GregTech.lang");
 
             if (gtLangFile.exists() && gtLangFile.isFile()) {
-                System.out.println("[GT Item Untranslator] Found external GregTech.lang at: " + gtLangFile.getAbsolutePath());
+                System.out
+                    .println("[GT Item Untranslator] Found external GregTech.lang at: " + gtLangFile.getAbsolutePath());
                 try (InputStream is = new FileInputStream(gtLangFile)) {
                     int loaded = loadFromStream(is, gtLangFile.getAbsolutePath());
                     totalLoaded += loaded;
-                    System.out.println("[GT Item Untranslator] Loaded " + loaded + " entries from external GregTech.lang");
+                    System.out
+                        .println("[GT Item Untranslator] Loaded " + loaded + " entries from external GregTech.lang");
                 }
             } else {
-                System.out.println("[GT Item Untranslator] External GregTech.lang not found in .minecraft folder (" 
-                                   + gtLangFile.getAbsolutePath() + ")");
+                System.out.println(
+                    "[GT Item Untranslator] External GregTech.lang not found in .minecraft folder ("
+                        + gtLangFile.getAbsolutePath()
+                        + ")");
             }
         } catch (Exception e) {
             System.err.println("[GT Item Untranslator] ERROR loading external GregTech.lang from .minecraft");
@@ -73,7 +73,8 @@ public class OriginalLanguageStore {
         }
 
         isLoaded = true;
-        System.out.println("[GT Item Untranslator] Initialization complete. Total unique entries: " + ORIGINAL_ENGLISH.size());
+        System.out.println(
+            "[GT Item Untranslator] Initialization complete. Total unique entries: " + ORIGINAL_ENGLISH.size());
     }
 
     private static int loadFromStream(InputStream is, String source) {
@@ -92,14 +93,21 @@ public class OriginalLanguageStore {
 
                 int eqPos = line.indexOf('=');
                 if (eqPos > 0) {
-                    String key = line.substring(0, eqPos).trim();
+                    String key = line.substring(0, eqPos)
+                        .trim();
                     String value = line.substring(eqPos + 1);
 
                     boolean isDebugKey = DEBUG_KEY != null && DEBUG_KEY.equals(key);
                     if (isDebugKey) {
-                        System.out.println("[GT Item Untranslator] [LOAD DEBUG] " + source
-                            + " line " + lineNumber
-                            + " -> key='" + key + "', value='" + value + "'");
+                        System.out.println(
+                            "[GT Item Untranslator] [LOAD DEBUG] " + source
+                                + " line "
+                                + lineNumber
+                                + " -> key='"
+                                + key
+                                + "', value='"
+                                + value
+                                + "'");
                     }
 
                     ORIGINAL_ENGLISH.put(key, value);
