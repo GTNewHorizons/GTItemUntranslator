@@ -3,10 +3,10 @@
 	"modList": [{
 		"modid": "${modId}",
 		"name": "${modName}",
-		"description": "Adds original name (engslish) in tooltip on GT and his addons stuff, you can toogle it with command /gttip on/off",
+		"description": "Adds original name (english) in tooltip on GT and his addons stuff, you can toogle it with command /gtip on/off",
 		"version": "${modVersion}",
 		"mcversion": "${minecraftVersion}",
-		"url": "https://github.com/mrTeroblaze/TravelAnchorFix",
+		"url": "https://github.com/mrTeroblaze/GTItemUntranslator",
 		"updateUrl": "",
 		"authorList": ["mrTeroblaze via ChatGPT and Qwen"],
 		"credits": "",
