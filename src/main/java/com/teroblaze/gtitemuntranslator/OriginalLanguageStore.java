@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class OriginalLanguageStore {
 
-    private static final String DEBUG_KEY = null; // Specify the key for  debugging
+    private static final String DEBUG_KEY = null; // Specify the key for debugging
     private static final Map<String, String> ORIGINAL_ENGLISH = new HashMap<>();
     private static boolean isLoaded = false;
 
