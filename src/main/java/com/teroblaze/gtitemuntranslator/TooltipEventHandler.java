@@ -196,12 +196,13 @@ public class TooltipEventHandler {
                         String prefix = entry.getKey();
                         if (oreName.startsWith(prefix)) {
                             String material = prettifyMaterialName(oreName.substring(prefix.length()));
-                            return entry.getValue().replace("%material", material);
+                            return entry.getValue()
+                                .replace("%material", material);
                         }
                     }
                 }
             }
-			
+
             // === 2. Werkstoff casings ===
             if (localizationKey != null && (localizationKey.startsWith("bw.werkstoffblockscasing.")
                 || localizationKey.startsWith("bw.werkstoffblockscasingadvanced."))) {
