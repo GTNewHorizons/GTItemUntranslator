@@ -187,6 +187,21 @@ public class TooltipEventHandler {
                 }
             }
 
+            // === 2. Универсальный фолбэк для BartWorks через OreDict ===
+            if (localizationKey.startsWith("bw.")) {
+                int[] ids = OreDictionary.getOreIDs(itemStack);
+                for (int id : ids) {
+                    String oreName = OreDictionary.getOreName(id);
+                    for (Map.Entry<String, String> entry : BW_OREDICT_TEMPLATES.entrySet()) {
+                        String prefix = entry.getKey();
+                        if (oreName.startsWith(prefix)) {
+                            String material = prettifyMaterialName(oreName.substring(prefix.length()));
+                            return entry.getValue().replace("%material", material);
+                        }
+                    }
+                }
+            }
+			
             // === 2. Werkstoff casings ===
             if (localizationKey != null && (localizationKey.startsWith("bw.werkstoffblockscasing.")
                 || localizationKey.startsWith("bw.werkstoffblockscasingadvanced."))) {
