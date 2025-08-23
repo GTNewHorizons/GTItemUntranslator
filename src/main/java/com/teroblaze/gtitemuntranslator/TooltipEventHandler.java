@@ -119,7 +119,7 @@ public class TooltipEventHandler {
     }
 
     // === Getting the original English name ===
-    private String getOriginalEnglishName(ItemStack itemStack, String localizationKey) {
+    public static String getOriginalEnglishName(ItemStack itemStack, String localizationKey) {
         if (itemStack == null) {
             return null;
         }
