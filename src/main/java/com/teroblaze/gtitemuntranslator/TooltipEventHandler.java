@@ -112,7 +112,7 @@ public class TooltipEventHandler {
         BW_OREDICT_TEMPLATES.put("capsuleMolten", "Molten %material Capsule");
     }
 
-    private String prettifyMaterialName(String name) {
+    private static String prettifyMaterialName(String name) {
         if (name == null || name.isEmpty()) return name;
         return name.replaceAll("([a-z])([A-Z])", "$1 $2")
             .trim();
