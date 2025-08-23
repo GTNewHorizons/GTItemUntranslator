@@ -1,6 +1,7 @@
 package com.teroblaze.gtitemuntranslator.waila;
 
 import net.minecraft.block.Block;
+
 import mcp.mobius.waila.api.IWailaRegistrar;
 
 public class WailaRegister {
