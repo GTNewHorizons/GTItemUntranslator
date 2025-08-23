@@ -303,7 +303,8 @@ public class TooltipEventHandler {
             t.printStackTrace();
         }
     }
-	// === Публичный статический доступ для Waila ===
+
+    // === Публичный статический доступ для Waila ===
     public static String getOriginalEnglishNameStatic(ItemStack stack, String localizationKey) {
         TooltipEventHandler handler = new TooltipEventHandler();
         return handler.getOriginalEnglishName(stack, localizationKey);
