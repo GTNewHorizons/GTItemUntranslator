@@ -7,12 +7,11 @@ import net.minecraftforge.common.MinecraftForge;
 
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLInterModComms;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
-
-import cpw.mods.fml.common.event.FMLInterModComms;
 
 @Mod(
     modid = GTItemUntranslator.MODID,
@@ -47,8 +46,8 @@ public class GTItemUntranslator {
 
         // Регистрируем Waila-интеграцию (если Waila установлена)
         try {
-            FMLInterModComms.sendMessage("Waila", "register",
-                "com.teroblaze.gtitemuntranslator.waila.WailaRegister.register");
+            FMLInterModComms
+                .sendMessage("Waila", "register", "com.teroblaze.gtitemuntranslator.waila.WailaRegister.register");
             System.out.println("[" + NAME + "] Waila integration registered.");
         } catch (Throwable t) {
             System.err.println("[" + NAME + "] Waila not found or integration failed.");
