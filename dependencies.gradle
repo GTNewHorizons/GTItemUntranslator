@@ -36,4 +36,5 @@
 dependencies {
     //runtimeOnlyNonPublishable("com.github.GTNewHorizons:NotEnoughItems:2.7.69-GTNH:dev")
 	compile files("libs/gregtech-5.09.51.419.jar")
+	compileOnly('com.github.GTNewHorizons:waila:1.8.1:dev') {transitive = false}
 }
