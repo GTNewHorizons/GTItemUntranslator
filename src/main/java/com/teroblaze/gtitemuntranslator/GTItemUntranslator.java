@@ -12,17 +12,22 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartedEvent;
 import cpw.mods.fml.common.event.FMLServerStoppedEvent;
 
+import cpw.mods.fml.common.event.FMLInterModComms;
+
 @Mod(
     modid = GTItemUntranslator.MODID,
     name = GTItemUntranslator.NAME,
     version = GTItemUntranslator.VERSION,
-    dependencies = "required-after:gregtech",
+    dependencies = "required-after:gregtech;after:Waila",
     acceptedMinecraftVersions = "[1.7.10]")
 public class GTItemUntranslator {
 
     public static final String MODID = "gtitemuntranslator";
     public static final String NAME = "GT Item Untranslator";
     public static final String VERSION = "1.0.0";
+
+    /** Глобальный флаг включения/выключения английских тултипов */
+    public static boolean tooltipsEnabled = true;
 
     @Mod.Instance(MODID)
     public static GTItemUntranslator INSTANCE;
@@ -39,6 +44,15 @@ public class GTItemUntranslator {
         System.out.println("[" + NAME + "] INIT started. Registering event handlers.");
         MinecraftForge.EVENT_BUS.register(new TooltipEventHandler());
         System.out.println("[" + NAME + "] Event handlers registered.");
+
+        // Регистрируем Waila-интеграцию (если Waila установлена)
+        try {
+            FMLInterModComms.sendMessage("Waila", "register",
+                "com.teroblaze.gtitemuntranslator.waila.WailaRegister.register");
+            System.out.println("[" + NAME + "] Waila integration registered.");
+        } catch (Throwable t) {
+            System.err.println("[" + NAME + "] Waila not found or integration failed.");
+        }
     }
 
     @Mod.EventHandler
