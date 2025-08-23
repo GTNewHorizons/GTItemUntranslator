@@ -5,6 +5,6 @@ import mcp.mobius.waila.api.IWailaRegistrar;
 
 public class WailaRegister {
     public static void register(IWailaRegistrar registrar) {
-        registrar.registerHeadProvider(new WailaDataProvider(), Block.class);
+        registrar.registerHeadProvider(new DataProvider(), Block.class);
     }
 }
