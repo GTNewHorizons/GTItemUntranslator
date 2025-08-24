@@ -26,49 +26,46 @@ public class DataProvider implements IWailaDataProvider {
 
     @Override
     public List<String> getWailaHead(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor,
-        IWailaConfigHandler config) {
+                                     IWailaConfigHandler config) {
         if (!GTItemUntranslator.tooltipsEnabled) return currenttip;
+
+        String englishName = null;
 
         try {
             TileEntity te = accessor.getTileEntity();
+            if (te instanceof BaseMetaTileEntity) {
+                IMetaTileEntity meta = ((BaseMetaTileEntity) te).getMetaTileEntity();
+                if (meta != null && meta.getMetaName() != null) {
+                    // Сначала строим ключ по mName
+                    String rawKey = meta.getMetaName(); // напр. "multimachine.blastfurnace"
+                    String langKey = "tile." + rawKey + ".name";
 
-            // === Проверка GT машин через рефлексию ===
-            if (te != null && te.getClass()
-                .getName()
-                .equals("gregtech.api.metatileentity.BaseMetaTileEntity")) {
-                try {
-                    Method getMetaTileEntity = te.getClass()
-                        .getMethod("getMetaTileEntity");
-                    Object mte = getMetaTileEntity.invoke(te);
-                    if (mte != null) {
-                        // у MetaTileEntity есть поле mName
-                        String engName = (String) mte.getClass()
-                            .getField("mName")
-                            .get(mte);
-                        if (engName != null && !engName.isEmpty()
-                            && !currenttip.get(0)
-                                .contains(engName)) {
-                            currenttip.add(1, EnumChatFormatting.GRAY + "[EN] " + engName);
-                        }
-                        return currenttip;
+                    String fromLang = OriginalLanguageStore.getOriginal(langKey);
+                    if (fromLang != null && !fromLang.equals(langKey)) {
+                        englishName = fromLang;
+                    } else {
+                        // fallback через TooltipEventHandler
+                        englishName = TooltipEventHandler.getOriginalEnglishNameStatic(itemStack, langKey);
                     }
-                } catch (Throwable ignore) {
-                    // Если не получилось через рефлексию — идём в fallback
                 }
             }
 
-            // === Fallback для обычных блоков ===
-            ItemStack stack = new ItemStack(accessor.getBlock(), 1, accessor.getMetadata());
-            String unloc = stack.getUnlocalizedName();
-            String name = TooltipEventHandler.getOriginalEnglishNameStatic(stack, unloc);
-            if (name != null && !currenttip.get(0)
-                .contains(name)) {
-                currenttip.add(1, EnumChatFormatting.GRAY + "[EN] " + name);
+            // fallback: если это просто блок, пробуем через TooltipEventHandler
+            if (englishName == null && itemStack != null) {
+                String unloc = itemStack.getUnlocalizedName();
+                englishName = TooltipEventHandler.getOriginalEnglishNameStatic(itemStack, unloc);
             }
 
         } catch (Throwable t) {
-            System.err.println("[GT Item Untranslator] Waila error: " + t.getMessage());
+            System.err.println("[GT Item Untranslator][Waila] Error resolving english name:");
+            t.printStackTrace();
         }
+
+        if (englishName != null && !englishName.trim().isEmpty()) {
+            // Вставляем вторым элементом (после локализованного названия)
+            currenttip.add(1, "§7[EN] " + englishName);
+        }
+
         return currenttip;
     }
 
