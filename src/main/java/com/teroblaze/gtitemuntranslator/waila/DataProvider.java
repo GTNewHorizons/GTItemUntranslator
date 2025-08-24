@@ -7,16 +7,13 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.World;
 
 import com.teroblaze.gtitemuntranslator.GTItemUntranslator;
-import com.teroblaze.gtitemuntranslator.TooltipEventHandler;
 import com.teroblaze.gtitemuntranslator.OriginalLanguageStore;
+import com.teroblaze.gtitemuntranslator.TooltipEventHandler;
 
-import gregtech.api.interfaces.metatileentity.IMetaTileEntity;
 import gregtech.api.metatileentity.BaseMetaTileEntity;
-
 import mcp.mobius.waila.api.IWailaConfigHandler;
 import mcp.mobius.waila.api.IWailaDataAccessor;
 import mcp.mobius.waila.api.IWailaDataProvider;
@@ -30,7 +27,8 @@ public class DataProvider implements IWailaDataProvider {
         try {
             getMetaMethod = BaseMetaTileEntity.class.getMethod("getMetaTileEntity");
         } catch (Exception e) {
-            System.err.println("[GT Item Untranslator][Waila] Could not reflect BaseMetaTileEntity.getMetaTileEntity()");
+            System.err
+                .println("[GT Item Untranslator][Waila] Could not reflect BaseMetaTileEntity.getMetaTileEntity()");
         }
     }
 
@@ -41,7 +39,7 @@ public class DataProvider implements IWailaDataProvider {
 
     @Override
     public List<String> getWailaHead(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor,
-                                     IWailaConfigHandler config) {
+        IWailaConfigHandler config) {
         if (!GTItemUntranslator.tooltipsEnabled) return currenttip;
 
         String englishName = null;
@@ -54,9 +52,11 @@ public class DataProvider implements IWailaDataProvider {
                     // находим метод getMetaName через reflection
                     if (getMetaNameMethod == null) {
                         try {
-                            getMetaNameMethod = metaObj.getClass().getMethod("getMetaName");
+                            getMetaNameMethod = metaObj.getClass()
+                                .getMethod("getMetaName");
                         } catch (Exception e) {
-                            System.err.println("[GT Item Untranslator][Waila] Could not find getMetaName on " + metaObj.getClass());
+                            System.err.println(
+                                "[GT Item Untranslator][Waila] Could not find getMetaName on " + metaObj.getClass());
                         }
                     }
 
@@ -88,7 +88,8 @@ public class DataProvider implements IWailaDataProvider {
             t.printStackTrace();
         }
 
-        if (englishName != null && !englishName.trim().isEmpty()) {
+        if (englishName != null && !englishName.trim()
+            .isEmpty()) {
             currenttip.add(1, "§7[EN] " + englishName);
         }
 
