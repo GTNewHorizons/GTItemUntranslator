@@ -1,19 +1,21 @@
 package com.teroblaze.gtitemuntranslator.waila;
 
-import com.teroblaze.gtitemuntranslator.GTItemUntranslator;
-import com.teroblaze.gtitemuntranslator.OriginalLanguageStore;
-import gregtech.api.interfaces.metatileentity.IMetaTileEntity;
-import gregtech.api.metatileentity.BaseMetaTileEntity;
-import mcp.mobius.waila.api.IWailaConfigHandler;
-import mcp.mobius.waila.api.IWailaDataAccessor;
-import mcp.mobius.waila.api.IWailaDataProvider;
+import java.util.List;
+
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
+import net.minecraft.block.Block;
 
-import java.util.List;
+import com.teroblaze.gtitemuntranslator.GTItemUntranslator;
+import com.teroblaze.gtitemuntranslator.TooltipEventHandler;
+
+import mcp.mobius.waila.api.IWailaConfigHandler;
+import mcp.mobius.waila.api.IWailaDataAccessor;
+import mcp.mobius.waila.api.IWailaDataProvider;
 
 public class DataProvider implements IWailaDataProvider {
 
@@ -26,40 +28,34 @@ public class DataProvider implements IWailaDataProvider {
     public List<String> getWailaHead(ItemStack itemStack, List<String> currenttip,
                                      IWailaDataAccessor accessor, IWailaConfigHandler config) {
         if (!GTItemUntranslator.tooltipsEnabled) return currenttip;
-        if (itemStack == null) return currenttip;
 
-        TileEntity te = accessor.getTileEntity();
-        if (te instanceof BaseMetaTileEntity) {
-            IMetaTileEntity meta = ((BaseMetaTileEntity) te).getMetaTileEntity();
-            if (meta != null) {
-                String rawKey = meta.getMetaName(); // например "multimachine.blastfurnace"
-                if (rawKey != null && !rawKey.isEmpty()) {
-                    String fullKey = "gt.blockmachines." + rawKey;
-                    System.out.println("[GT Item Untranslator][Waila] metaKey: " + fullKey);
-                    String enName = OriginalLanguageStore.getOriginal(fullKey);
-                    if (enName != null && !enName.equals(fullKey)) {
-                        System.out.println("[GT Item Untranslator][Waila] metaKey resolved: " + enName);
-                        currenttip.add(1, "§7[EN] " + enName);
-                        return currenttip;
-                    } else {
-                        System.out.println("[GT Item Untranslator][Waila] metaKey NOT resolved: " + fullKey);
+        try {
+            TileEntity te = accessor.getTileEntity();
+            if (te != null) {
+                Block block = accessor.getBlock();
+                int x = accessor.getPosition().blockX;
+                int y = accessor.getPosition().blockY;
+                int z = accessor.getPosition().blockZ;
+
+                // Достаём ItemStack блока так, как будто middle-click (pick block)
+                ItemStack pick = block.getPickBlock(
+                        new MovingObjectPosition(x, y, z, 1, accessor.getRenderingPosition(), false),
+                        accessor.getWorld(),
+                        x, y, z
+                );
+
+                if (pick != null) {
+                    String unloc = pick.getUnlocalizedName();
+                    String englishName = TooltipEventHandler.getOriginalEnglishNameStatic(pick, unloc + ".name");
+
+                    if (englishName != null && !englishName.equals(unloc)) {
+                        currenttip.add("[EN] " + englishName);
                     }
                 }
             }
-        }
-
-        // === ФОЛБЭК через itemStack.getUnlocalizedName() ===
-        String unloc = itemStack.getUnlocalizedName(); // gt.blockmachines.multimachine.blastfurnace
-        if (unloc != null && !unloc.isEmpty()) {
-            String fullKey = unloc + ".name"; // gt.blockmachines.multimachine.blastfurnace.name
-            System.out.println("[GT Item Untranslator][Waila] fallbackKey: " + fullKey);
-            String enName = OriginalLanguageStore.getOriginal(fullKey);
-            if (enName != null && !enName.equals(fullKey)) {
-                System.out.println("[GT Item Untranslator][Waila] fallbackKey resolved: " + enName);
-                currenttip.add(1, "§7[EN] " + enName);
-            } else {
-                System.out.println("[GT Item Untranslator][Waila] fallbackKey NOT resolved: " + fullKey);
-            }
+        } catch (Throwable t) {
+            System.err.println("[GT Item Untranslator][Waila] Exception while resolving name:");
+            t.printStackTrace();
         }
 
         return currenttip;
