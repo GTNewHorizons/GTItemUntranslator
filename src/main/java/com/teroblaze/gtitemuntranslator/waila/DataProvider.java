@@ -3,16 +3,17 @@ package com.teroblaze.gtitemuntranslator.waila;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.block.Block;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.World;
 
 import com.teroblaze.gtitemuntranslator.GTItemUntranslator;
-import com.teroblaze.gtitemuntranslator.TooltipEventHandler;
 import com.teroblaze.gtitemuntranslator.OriginalLanguageStore;
+import com.teroblaze.gtitemuntranslator.TooltipEventHandler;
 
 import gregtech.api.interfaces.metatileentity.IMetaTileEntity;
 import gregtech.api.metatileentity.BaseMetaTileEntity;
@@ -22,6 +23,16 @@ import mcp.mobius.waila.api.IWailaDataAccessor;
 import mcp.mobius.waila.api.IWailaDataProvider;
 
 public class DataProvider implements IWailaDataProvider {
+
+    private static Method getMetaMethod;
+
+    static {
+        try {
+            getMetaMethod = BaseMetaTileEntity.class.getMethod("getMetaTileEntity");
+        } catch (Exception e) {
+            System.err.println("[GT Item Untranslator][Waila] Could not reflect BaseMetaTileEntity.getMetaTileEntity()");
+        }
+    }
 
     @Override
     public ItemStack getWailaStack(IWailaDataAccessor accessor, IWailaConfigHandler config) {
@@ -37,24 +48,25 @@ public class DataProvider implements IWailaDataProvider {
 
         try {
             TileEntity te = accessor.getTileEntity();
-            if (te instanceof BaseMetaTileEntity) {
-                IMetaTileEntity meta = ((BaseMetaTileEntity) te).getMetaTileEntity();
-                if (meta != null && meta.getMetaName() != null) {
-                    // Сначала строим ключ по mName
+            if (te instanceof BaseMetaTileEntity && getMetaMethod != null) {
+                Object metaObj = getMetaMethod.invoke(te);
+                if (metaObj instanceof IMetaTileEntity) {
+                    IMetaTileEntity meta = (IMetaTileEntity) metaObj;
                     String rawKey = meta.getMetaName(); // напр. "multimachine.blastfurnace"
-                    String langKey = "tile." + rawKey + ".name";
+                    if (rawKey != null) {
+                        String langKey = "tile." + rawKey + ".name";
 
-                    String fromLang = OriginalLanguageStore.getOriginal(langKey);
-                    if (fromLang != null && !fromLang.equals(langKey)) {
-                        englishName = fromLang;
-                    } else {
-                        // fallback через TooltipEventHandler
-                        englishName = TooltipEventHandler.getOriginalEnglishNameStatic(itemStack, langKey);
+                        String fromLang = OriginalLanguageStore.getOriginal(langKey);
+                        if (fromLang != null && !fromLang.equals(langKey)) {
+                            englishName = fromLang;
+                        } else {
+                            englishName = TooltipEventHandler.getOriginalEnglishNameStatic(itemStack, langKey);
+                        }
                     }
                 }
             }
 
-            // fallback: если это просто блок, пробуем через TooltipEventHandler
+            // fallback: обычные блоки
             if (englishName == null && itemStack != null) {
                 String unloc = itemStack.getUnlocalizedName();
                 englishName = TooltipEventHandler.getOriginalEnglishNameStatic(itemStack, unloc);
@@ -66,7 +78,6 @@ public class DataProvider implements IWailaDataProvider {
         }
 
         if (englishName != null && !englishName.trim().isEmpty()) {
-            // Вставляем вторым элементом (после локализованного названия)
             currenttip.add(1, "§7[EN] " + englishName);
         }
 
