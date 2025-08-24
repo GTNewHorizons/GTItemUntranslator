@@ -2,13 +2,13 @@ package com.teroblaze.gtitemuntranslator.waila;
 
 import java.util.List;
 
+import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
-import net.minecraft.block.Block;
 
 import com.teroblaze.gtitemuntranslator.GTItemUntranslator;
 import com.teroblaze.gtitemuntranslator.TooltipEventHandler;
@@ -25,8 +25,8 @@ public class DataProvider implements IWailaDataProvider {
     }
 
     @Override
-    public List<String> getWailaHead(ItemStack itemStack, List<String> currenttip,
-                                     IWailaDataAccessor accessor, IWailaConfigHandler config) {
+    public List<String> getWailaHead(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor,
+        IWailaConfigHandler config) {
         if (!GTItemUntranslator.tooltipsEnabled) return currenttip;
 
         try {
@@ -39,10 +39,11 @@ public class DataProvider implements IWailaDataProvider {
 
                 // Достаём ItemStack блока так, как будто middle-click (pick block)
                 ItemStack pick = block.getPickBlock(
-                        new MovingObjectPosition(x, y, z, 1, accessor.getRenderingPosition(), false),
-                        accessor.getWorld(),
-                        x, y, z
-                );
+                    new MovingObjectPosition(x, y, z, 1, accessor.getRenderingPosition(), false),
+                    accessor.getWorld(),
+                    x,
+                    y,
+                    z);
 
                 if (pick != null) {
                     String unloc = pick.getUnlocalizedName();
@@ -62,20 +63,20 @@ public class DataProvider implements IWailaDataProvider {
     }
 
     @Override
-    public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip,
-                                     IWailaDataAccessor accessor, IWailaConfigHandler config) {
+    public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor,
+        IWailaConfigHandler config) {
         return currenttip;
     }
 
     @Override
-    public List<String> getWailaTail(ItemStack itemStack, List<String> currenttip,
-                                     IWailaDataAccessor accessor, IWailaConfigHandler config) {
+    public List<String> getWailaTail(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor,
+        IWailaConfigHandler config) {
         return currenttip;
     }
 
     @Override
-    public NBTTagCompound getNBTData(EntityPlayerMP player, TileEntity te,
-                                     NBTTagCompound tag, World world, int x, int y, int z) {
+    public NBTTagCompound getNBTData(EntityPlayerMP player, TileEntity te, NBTTagCompound tag, World world, int x,
+        int y, int z) {
         return tag;
     }
 }
