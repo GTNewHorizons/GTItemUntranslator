@@ -8,6 +8,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.World;
 
 import com.teroblaze.gtitemuntranslator.GTItemUntranslator;
 import com.teroblaze.gtitemuntranslator.TooltipEventHandler;
