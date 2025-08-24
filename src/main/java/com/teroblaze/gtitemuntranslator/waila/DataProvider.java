@@ -3,17 +3,16 @@ package com.teroblaze.gtitemuntranslator.waila;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import net.minecraft.block.Block;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.World;
 
 import com.teroblaze.gtitemuntranslator.GTItemUntranslator;
-import com.teroblaze.gtitemuntranslator.OriginalLanguageStore;
 import com.teroblaze.gtitemuntranslator.TooltipEventHandler;
+import com.teroblaze.gtitemuntranslator.OriginalLanguageStore;
 
 import gregtech.api.interfaces.metatileentity.IMetaTileEntity;
 import gregtech.api.metatileentity.BaseMetaTileEntity;
@@ -25,6 +24,7 @@ import mcp.mobius.waila.api.IWailaDataProvider;
 public class DataProvider implements IWailaDataProvider {
 
     private static Method getMetaMethod;
+    private static Method getMetaNameMethod;
 
     static {
         try {
@@ -50,17 +50,28 @@ public class DataProvider implements IWailaDataProvider {
             TileEntity te = accessor.getTileEntity();
             if (te instanceof BaseMetaTileEntity && getMetaMethod != null) {
                 Object metaObj = getMetaMethod.invoke(te);
-                if (metaObj instanceof IMetaTileEntity) {
-                    IMetaTileEntity meta = (IMetaTileEntity) metaObj;
-                    String rawKey = meta.getMetaName(); // напр. "multimachine.blastfurnace"
-                    if (rawKey != null) {
-                        String langKey = "tile." + rawKey + ".name";
+                if (metaObj != null) {
+                    // находим метод getMetaName через reflection
+                    if (getMetaNameMethod == null) {
+                        try {
+                            getMetaNameMethod = metaObj.getClass().getMethod("getMetaName");
+                        } catch (Exception e) {
+                            System.err.println("[GT Item Untranslator][Waila] Could not find getMetaName on " + metaObj.getClass());
+                        }
+                    }
 
-                        String fromLang = OriginalLanguageStore.getOriginal(langKey);
-                        if (fromLang != null && !fromLang.equals(langKey)) {
-                            englishName = fromLang;
-                        } else {
-                            englishName = TooltipEventHandler.getOriginalEnglishNameStatic(itemStack, langKey);
+                    if (getMetaNameMethod != null) {
+                        Object rawKeyObj = getMetaNameMethod.invoke(metaObj);
+                        if (rawKeyObj instanceof String) {
+                            String rawKey = (String) rawKeyObj;
+                            String langKey = "tile." + rawKey + ".name";
+
+                            String fromLang = OriginalLanguageStore.getOriginal(langKey);
+                            if (fromLang != null && !fromLang.equals(langKey)) {
+                                englishName = fromLang;
+                            } else {
+                                englishName = TooltipEventHandler.getOriginalEnglishNameStatic(itemStack, langKey);
+                            }
                         }
                     }
                 }
