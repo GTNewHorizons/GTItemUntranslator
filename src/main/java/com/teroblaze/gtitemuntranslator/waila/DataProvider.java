@@ -14,7 +14,6 @@ import com.teroblaze.gtitemuntranslator.OriginalLanguageStore;
 import com.teroblaze.gtitemuntranslator.TooltipEventHandler;
 
 import gregtech.api.metatileentity.BaseMetaTileEntity;
-
 import mcp.mobius.waila.api.IWailaConfigHandler;
 import mcp.mobius.waila.api.IWailaDataAccessor;
 import mcp.mobius.waila.api.IWailaDataProvider;
@@ -29,7 +28,8 @@ public class DataProvider implements IWailaDataProvider {
             getMetaMethod = BaseMetaTileEntity.class.getMethod("getMetaTileEntity");
             System.out.println("[GT Item Untranslator][Waila] Reflection ok: BaseMetaTileEntity.getMetaTileEntity()");
         } catch (Exception e) {
-            System.err.println("[GT Item Untranslator][Waila] Could not reflect BaseMetaTileEntity.getMetaTileEntity()");
+            System.err
+                .println("[GT Item Untranslator][Waila] Could not reflect BaseMetaTileEntity.getMetaTileEntity()");
             e.printStackTrace();
         }
     }
@@ -40,8 +40,8 @@ public class DataProvider implements IWailaDataProvider {
     }
 
     @Override
-    public List<String> getWailaHead(ItemStack itemStack, List<String> currenttip,
-                                     IWailaDataAccessor accessor, IWailaConfigHandler config) {
+    public List<String> getWailaHead(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor,
+        IWailaConfigHandler config) {
         if (!GTItemUntranslator.tooltipsEnabled) return currenttip;
 
         String englishName = null;
@@ -57,10 +57,13 @@ public class DataProvider implements IWailaDataProvider {
                     // достаём метод getMetaName
                     if (getMetaNameMethod == null) {
                         try {
-                            getMetaNameMethod = metaObj.getClass().getMethod("getMetaName");
-                            System.out.println("[GT Item Untranslator][Waila] Found getMetaName on " + metaObj.getClass());
+                            getMetaNameMethod = metaObj.getClass()
+                                .getMethod("getMetaName");
+                            System.out
+                                .println("[GT Item Untranslator][Waila] Found getMetaName on " + metaObj.getClass());
                         } catch (Exception e) {
-                            System.err.println("[GT Item Untranslator][Waila] Could not find getMetaName on " + metaObj.getClass());
+                            System.err.println(
+                                "[GT Item Untranslator][Waila] Could not find getMetaName on " + metaObj.getClass());
                         }
                     }
 
@@ -94,7 +97,8 @@ public class DataProvider implements IWailaDataProvider {
             t.printStackTrace();
         }
 
-        if (englishName != null && !englishName.trim().isEmpty()) {
+        if (englishName != null && !englishName.trim()
+            .isEmpty()) {
             currenttip.add(1, "§7[EN] " + englishName);
             System.out.println("[GT Item Untranslator][Waila] Added english name: " + englishName);
         } else {
@@ -105,20 +109,20 @@ public class DataProvider implements IWailaDataProvider {
     }
 
     @Override
-    public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip,
-                                     IWailaDataAccessor accessor, IWailaConfigHandler config) {
+    public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor,
+        IWailaConfigHandler config) {
         return currenttip;
     }
 
     @Override
-    public List<String> getWailaTail(ItemStack itemStack, List<String> currenttip,
-                                     IWailaDataAccessor accessor, IWailaConfigHandler config) {
+    public List<String> getWailaTail(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor,
+        IWailaConfigHandler config) {
         return currenttip;
     }
 
     @Override
-    public NBTTagCompound getNBTData(EntityPlayerMP player, TileEntity te, NBTTagCompound tag,
-                                     World world, int x, int y, int z) {
+    public NBTTagCompound getNBTData(EntityPlayerMP player, TileEntity te, NBTTagCompound tag, World world, int x,
+        int y, int z) {
         // Нам не нужно ничего особенного, просто возвращаем исходный tag
         return tag;
     }
