@@ -3,11 +3,11 @@ package com.teroblaze.gtitemuntranslator.waila;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import net.minecraft.item.ItemStack;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 
 import com.teroblaze.gtitemuntranslator.GTItemUntranslator;
@@ -25,22 +25,29 @@ public class DataProvider implements IWailaDataProvider {
     }
 
     @Override
-    public List<String> getWailaHead(ItemStack itemStack, List<String> currenttip,
-                                     IWailaDataAccessor accessor, IWailaConfigHandler config) {
+    public List<String> getWailaHead(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor,
+        IWailaConfigHandler config) {
         if (!GTItemUntranslator.tooltipsEnabled) return currenttip;
 
         try {
             TileEntity te = accessor.getTileEntity();
 
             // === Проверка GT машин через рефлексию ===
-            if (te != null && te.getClass().getName().equals("gregtech.api.metatileentity.BaseMetaTileEntity")) {
+            if (te != null && te.getClass()
+                .getName()
+                .equals("gregtech.api.metatileentity.BaseMetaTileEntity")) {
                 try {
-                    Method getMetaTileEntity = te.getClass().getMethod("getMetaTileEntity");
+                    Method getMetaTileEntity = te.getClass()
+                        .getMethod("getMetaTileEntity");
                     Object mte = getMetaTileEntity.invoke(te);
                     if (mte != null) {
                         // у MetaTileEntity есть поле mName
-                        String engName = (String) mte.getClass().getField("mName").get(mte);
-                        if (engName != null && !engName.isEmpty() && !currenttip.get(0).contains(engName)) {
+                        String engName = (String) mte.getClass()
+                            .getField("mName")
+                            .get(mte);
+                        if (engName != null && !engName.isEmpty()
+                            && !currenttip.get(0)
+                                .contains(engName)) {
                             currenttip.add(1, EnumChatFormatting.GRAY + "[EN] " + engName);
                         }
                         return currenttip;
@@ -54,7 +61,8 @@ public class DataProvider implements IWailaDataProvider {
             ItemStack stack = new ItemStack(accessor.getBlock(), 1, accessor.getMetadata());
             String unloc = stack.getUnlocalizedName();
             String name = TooltipEventHandler.getOriginalEnglishNameStatic(stack, unloc);
-            if (name != null && !currenttip.get(0).contains(name)) {
+            if (name != null && !currenttip.get(0)
+                .contains(name)) {
                 currenttip.add(1, EnumChatFormatting.GRAY + "[EN] " + name);
             }
 
