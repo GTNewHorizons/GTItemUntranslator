@@ -22,12 +22,17 @@ public class CommandWTIP extends CommandBase {
             sender.addChatMessage(new ChatComponentText("Usage: " + getCommandUsage(sender)));
             return;
         }
-
         if ("on".equalsIgnoreCase(args[0])) {
             GTItemUntranslator.wailaEnabled = true;
+            GTItemUntranslator.config.get("general", "wailaEnabled", true)
+                    .set(GTItemUntranslator.wailaEnabled);
+            GTItemUntranslator.config.save();
             sender.addChatMessage(new ChatComponentText("GT Waila English tooltips activated."));
         } else if ("off".equalsIgnoreCase(args[0])) {
             GTItemUntranslator.wailaEnabled = false;
+            GTItemUntranslator.config.get("general", "wailaEnabled", true)
+                    .set(GTItemUntranslator.wailaEnabled);
+            GTItemUntranslator.config.save();
             sender.addChatMessage(new ChatComponentText("GT Waila English tooltips deactivated."));
         } else {
             sender.addChatMessage(new ChatComponentText("Usage: " + getCommandUsage(sender)));
@@ -36,6 +41,6 @@ public class CommandWTIP extends CommandBase {
 
     @Override
     public int getRequiredPermissionLevel() {
-        return 0; // доступно всем игрокам
+        return 0;
     }
 }
