@@ -27,6 +27,8 @@ public class GTItemUntranslator {
 
     /** Глобальный флаг включения/выключения английских тултипов */
     public static boolean tooltipsEnabled = true;
+    /** Глобальный флаг включения/выключения английских подсказок в Waila */
+    public static boolean wailaEnabled = true;
 
     @Mod.Instance(MODID)
     public static GTItemUntranslator INSTANCE;
@@ -66,7 +68,8 @@ public class GTItemUntranslator {
         ICommandManager commandManager = server.getCommandManager();
         if (commandManager instanceof ServerCommandManager) {
             ((ServerCommandManager) commandManager).registerCommand(new CommandGTIP());
-            System.out.println("[" + NAME + "] /gtip command registered.");
+            ((ServerCommandManager) commandManager).registerCommand(new CommandWTIP());
+            System.out.println("[" + NAME + "] /gtip and /wtip commands registered.");
         }
 
         if (!OriginalLanguageStore.isInitialized()) {

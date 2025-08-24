@@ -1,0 +1,41 @@
+package com.teroblaze.gtitemuntranslator;
+
+import net.minecraft.command.CommandBase;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.util.ChatComponentText;
+
+public class CommandWTIP extends CommandBase {
+
+    @Override
+    public String getCommandName() {
+        return "wtip";
+    }
+
+    @Override
+    public String getCommandUsage(ICommandSender sender) {
+        return "/wtip <on|off>";
+    }
+
+    @Override
+    public void processCommand(ICommandSender sender, String[] args) {
+        if (args.length != 1) {
+            sender.addChatMessage(new ChatComponentText("Usage: " + getCommandUsage(sender)));
+            return;
+        }
+
+        if ("on".equalsIgnoreCase(args[0])) {
+            GTItemUntranslator.wailaEnabled = true;
+            sender.addChatMessage(new ChatComponentText("GT Waila English tooltips activated."));
+        } else if ("off".equalsIgnoreCase(args[0])) {
+            GTItemUntranslator.wailaEnabled = false;
+            sender.addChatMessage(new ChatComponentText("GT Waila English tooltips deactivated."));
+        } else {
+            sender.addChatMessage(new ChatComponentText("Usage: " + getCommandUsage(sender)));
+        }
+    }
+
+    @Override
+    public int getRequiredPermissionLevel() {
+        return 0; // доступно всем игрокам
+    }
+}

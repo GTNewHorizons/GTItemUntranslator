@@ -27,7 +27,7 @@ public class DataProvider implements IWailaDataProvider {
     @Override
     public List<String> getWailaHead(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor,
         IWailaConfigHandler config) {
-        if (!GTItemUntranslator.tooltipsEnabled) return currenttip;
+        if (!GTItemUntranslator.wailaEnabled) return currenttip;
 
         try {
             TileEntity te = accessor.getTileEntity();
