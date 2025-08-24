@@ -1,38 +1,21 @@
 package com.teroblaze.gtitemuntranslator.waila;
 
-import java.lang.reflect.Method;
-import java.util.List;
-
+import com.teroblaze.gtitemuntranslator.GTItemUntranslator;
+import com.teroblaze.gtitemuntranslator.OriginalLanguageStore;
+import gregtech.api.metatileentity.BaseMetaTileEntity;
+import gregtech.api.metatileentity.IMetaTileEntity;
+import mcp.mobius.waila.api.IWailaConfigHandler;
+import mcp.mobius.waila.api.IWailaDataAccessor;
+import mcp.mobius.waila.api.IWailaDataProvider;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 
-import com.teroblaze.gtitemuntranslator.GTItemUntranslator;
-import com.teroblaze.gtitemuntranslator.OriginalLanguageStore;
-import com.teroblaze.gtitemuntranslator.TooltipEventHandler;
-
-import gregtech.api.metatileentity.BaseMetaTileEntity;
-import mcp.mobius.waila.api.IWailaConfigHandler;
-import mcp.mobius.waila.api.IWailaDataAccessor;
-import mcp.mobius.waila.api.IWailaDataProvider;
+import java.util.List;
 
 public class DataProvider implements IWailaDataProvider {
-
-    private static Method getMetaMethod;
-    private static Method getMetaNameMethod;
-
-    static {
-        try {
-            getMetaMethod = BaseMetaTileEntity.class.getMethod("getMetaTileEntity");
-            System.out.println("[GT Item Untranslator][Waila] Reflection ok: BaseMetaTileEntity.getMetaTileEntity()");
-        } catch (Exception e) {
-            System.err
-                .println("[GT Item Untranslator][Waila] Could not reflect BaseMetaTileEntity.getMetaTileEntity()");
-            e.printStackTrace();
-        }
-    }
 
     @Override
     public ItemStack getWailaStack(IWailaDataAccessor accessor, IWailaConfigHandler config) {
@@ -40,90 +23,63 @@ public class DataProvider implements IWailaDataProvider {
     }
 
     @Override
-    public List<String> getWailaHead(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor,
-        IWailaConfigHandler config) {
+    public List<String> getWailaHead(ItemStack itemStack, List<String> currenttip,
+                                     IWailaDataAccessor accessor, IWailaConfigHandler config) {
         if (!GTItemUntranslator.tooltipsEnabled) return currenttip;
+        if (itemStack == null) return currenttip;
 
-        String englishName = null;
-
-        try {
-            TileEntity te = accessor.getTileEntity();
-            System.out.println("[GT Item Untranslator][Waila] Processing TileEntity: " + te);
-
-            if (te instanceof BaseMetaTileEntity && getMetaMethod != null) {
-                Object metaObj = getMetaMethod.invoke(te);
-                System.out.println("[GT Item Untranslator][Waila] metaObj = " + metaObj);
-                if (metaObj != null) {
-                    // достаём метод getMetaName
-                    if (getMetaNameMethod == null) {
-                        try {
-                            getMetaNameMethod = metaObj.getClass()
-                                .getMethod("getMetaName");
-                            System.out
-                                .println("[GT Item Untranslator][Waila] Found getMetaName on " + metaObj.getClass());
-                        } catch (Exception e) {
-                            System.err.println(
-                                "[GT Item Untranslator][Waila] Could not find getMetaName on " + metaObj.getClass());
-                        }
-                    }
-
-                    if (getMetaNameMethod != null) {
-                        Object rawKeyObj = getMetaNameMethod.invoke(metaObj);
-                        System.out.println("[GT Item Untranslator][Waila] rawKey = " + rawKeyObj);
-                        if (rawKeyObj instanceof String) {
-                            String rawKey = (String) rawKeyObj;
-                            String langKey = "tile." + rawKey + ".name";
-
-                            String fromLang = OriginalLanguageStore.getOriginal(langKey);
-                            if (fromLang != null && !fromLang.equals(langKey)) {
-                                englishName = fromLang;
-                            } else {
-                                englishName = TooltipEventHandler.getOriginalEnglishNameStatic(itemStack, langKey);
-                            }
-                        }
+        TileEntity te = accessor.getTileEntity();
+        if (te instanceof BaseMetaTileEntity) {
+            IMetaTileEntity meta = ((BaseMetaTileEntity) te).getMetaTileEntity();
+            if (meta != null) {
+                String rawKey = meta.getMetaName(); // например "multimachine.blastfurnace"
+                if (rawKey != null && !rawKey.isEmpty()) {
+                    String fullKey = "gt.blockmachines." + rawKey;
+                    System.out.println("[GT Item Untranslator][Waila] metaKey: " + fullKey);
+                    String enName = OriginalLanguageStore.getOriginal(fullKey);
+                    if (enName != null && !enName.equals(fullKey)) {
+                        System.out.println("[GT Item Untranslator][Waila] metaKey resolved: " + enName);
+                        currenttip.add(1, "§7[EN] " + enName);
+                        return currenttip;
+                    } else {
+                        System.out.println("[GT Item Untranslator][Waila] metaKey NOT resolved: " + fullKey);
                     }
                 }
             }
+        }
 
-            // fallback для обычных блоков
-            if (englishName == null && itemStack != null) {
-                String unloc = itemStack.getUnlocalizedName();
-                System.out.println("[GT Item Untranslator][Waila] Fallback unloc = " + unloc);
-                englishName = TooltipEventHandler.getOriginalEnglishNameStatic(itemStack, unloc);
+        // === ФОЛБЭК через itemStack.getUnlocalizedName() ===
+        String unloc = itemStack.getUnlocalizedName(); // gt.blockmachines.multimachine.blastfurnace
+        if (unloc != null && !unloc.isEmpty()) {
+            String fullKey = unloc + ".name"; // gt.blockmachines.multimachine.blastfurnace.name
+            System.out.println("[GT Item Untranslator][Waila] fallbackKey: " + fullKey);
+            String enName = OriginalLanguageStore.getOriginal(fullKey);
+            if (enName != null && !enName.equals(fullKey)) {
+                System.out.println("[GT Item Untranslator][Waila] fallbackKey resolved: " + enName);
+                currenttip.add(1, "§7[EN] " + enName);
+            } else {
+                System.out.println("[GT Item Untranslator][Waila] fallbackKey NOT resolved: " + fullKey);
             }
-
-        } catch (Throwable t) {
-            System.err.println("[GT Item Untranslator][Waila] Error resolving english name:");
-            t.printStackTrace();
-        }
-
-        if (englishName != null && !englishName.trim()
-            .isEmpty()) {
-            currenttip.add(1, "§7[EN] " + englishName);
-            System.out.println("[GT Item Untranslator][Waila] Added english name: " + englishName);
-        } else {
-            System.out.println("[GT Item Untranslator][Waila] No english name resolved for item: " + itemStack);
         }
 
         return currenttip;
     }
 
     @Override
-    public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor,
-        IWailaConfigHandler config) {
+    public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip,
+                                     IWailaDataAccessor accessor, IWailaConfigHandler config) {
         return currenttip;
     }
 
     @Override
-    public List<String> getWailaTail(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor,
-        IWailaConfigHandler config) {
+    public List<String> getWailaTail(ItemStack itemStack, List<String> currenttip,
+                                     IWailaDataAccessor accessor, IWailaConfigHandler config) {
         return currenttip;
     }
 
     @Override
-    public NBTTagCompound getNBTData(EntityPlayerMP player, TileEntity te, NBTTagCompound tag, World world, int x,
-        int y, int z) {
-        // Нам не нужно ничего особенного, просто возвращаем исходный tag
+    public NBTTagCompound getNBTData(EntityPlayerMP player, TileEntity te,
+                                     NBTTagCompound tag, World world, int x, int y, int z) {
         return tag;
     }
 }
