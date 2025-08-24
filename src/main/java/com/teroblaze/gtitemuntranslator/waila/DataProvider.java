@@ -3,8 +3,11 @@ package com.teroblaze.gtitemuntranslator.waila;
 import java.lang.reflect.Method;
 import java.util.List;
 
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.World;
 
 import com.teroblaze.gtitemuntranslator.GTItemUntranslator;
 import com.teroblaze.gtitemuntranslator.OriginalLanguageStore;
@@ -37,8 +40,8 @@ public class DataProvider implements IWailaDataProvider {
     }
 
     @Override
-    public List<String> getWailaHead(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor,
-                                     IWailaConfigHandler config) {
+    public List<String> getWailaHead(ItemStack itemStack, List<String> currenttip,
+                                     IWailaDataAccessor accessor, IWailaConfigHandler config) {
         if (!GTItemUntranslator.tooltipsEnabled) return currenttip;
 
         String englishName = null;
@@ -102,14 +105,21 @@ public class DataProvider implements IWailaDataProvider {
     }
 
     @Override
-    public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor,
-                                     IWailaConfigHandler config) {
+    public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip,
+                                     IWailaDataAccessor accessor, IWailaConfigHandler config) {
         return currenttip;
     }
 
     @Override
-    public List<String> getWailaTail(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor,
-                                     IWailaConfigHandler config) {
+    public List<String> getWailaTail(ItemStack itemStack, List<String> currenttip,
+                                     IWailaDataAccessor accessor, IWailaConfigHandler config) {
         return currenttip;
+    }
+
+    @Override
+    public NBTTagCompound getNBTData(EntityPlayerMP player, TileEntity te, NBTTagCompound tag,
+                                     World world, int x, int y, int z) {
+        // Нам не нужно ничего особенного, просто возвращаем исходный tag
+        return tag;
     }
 }
