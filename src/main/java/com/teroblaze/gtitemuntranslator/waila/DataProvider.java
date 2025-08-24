@@ -10,6 +10,7 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.World;
 
 import com.teroblaze.gtitemuntranslator.TooltipEventHandler;
+import com.teroblaze.gtitemuntranslator.GTItemUntranslator;
 
 import mcp.mobius.waila.api.IWailaConfigHandler;
 import mcp.mobius.waila.api.IWailaDataAccessor;
