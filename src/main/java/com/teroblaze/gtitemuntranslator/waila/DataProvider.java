@@ -23,35 +23,38 @@ public class DataProvider implements IWailaDataProvider {
     }
 
     @Override
-    public List<String> getWailaHead(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor,
-        IWailaConfigHandler config) {
-        try {
-            ItemStack stack = itemStack;
-            if (stack == null) {
-                // если в инвентаре нет ItemStack, пробуем создать его из блока в мире
-                Block block = accessor.getBlock();
-                int meta = accessor.getMetadata();
-                if (block != null) {
-                    stack = new ItemStack(block, 1, meta);
-                }
-            }
+public List<String> getWailaHead(ItemStack itemStack, List<String> currenttip,
+                                 IWailaDataAccessor accessor, IWailaConfigHandler config) {
+    if (!GTItemUntranslator.tooltipsEnabled) return currenttip;
 
-            if (stack != null) {
-                String unloc = stack.getUnlocalizedName();
-                String englishName = TooltipEventHandler.getOriginalEnglishNameStatic(stack, unloc);
+    try {
+        // Проверка GT MetaTileEntity
+        if (accessor.getTileEntity() instanceof gregtech.api.metatileentity.BaseMetaTileEntity) {
+            gregtech.api.metatileentity.BaseMetaTileEntity baseTE =
+                (gregtech.api.metatileentity.BaseMetaTileEntity) accessor.getTileEntity();
 
-                if (englishName != null && !englishName.equals(unloc)
-                    && !currenttip.get(0)
-                        .contains(englishName)) {
-                    currenttip.add(1, EnumChatFormatting.GRAY + "[EN] " + englishName);
+            if (baseTE.getMetaTileEntity() != null) {
+                String engName = baseTE.getMetaTileEntity().mName; // тут оригинальное имя
+                if (engName != null && !engName.isEmpty() && !currenttip.get(0).contains(engName)) {
+                    currenttip.add(1, EnumChatFormatting.GRAY + "[EN] " + engName);
                 }
+                return currenttip;
             }
-        } catch (Throwable t) {
-            System.err.println("[GT Item Untranslator] Waila head error: " + t.getMessage());
-            t.printStackTrace();
         }
-        return currenttip;
+
+        // Fallback — обычные предметы/блоки
+        ItemStack stack = new ItemStack(accessor.getBlock(), 1, accessor.getMetadata());
+        String unloc = stack.getUnlocalizedName();
+        String name = TooltipEventHandler.getOriginalEnglishNameStatic(stack, unloc);
+        if (name != null && !currenttip.get(0).contains(name)) {
+            currenttip.add(1, EnumChatFormatting.GRAY + "[EN] " + name);
+        }
+
+    } catch (Throwable t) {
+        System.err.println("[GT Item Untranslator] Waila error: " + t.getMessage());
     }
+    return currenttip;
+}
 
     @Override
     public List<String> getWailaBody(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor,
