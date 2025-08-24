@@ -6,6 +6,7 @@ import java.util.List;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.nbt.NBTTagCompound;
 
 import com.teroblaze.gtitemuntranslator.GTItemUntranslator;
 import com.teroblaze.gtitemuntranslator.TooltipEventHandler;
