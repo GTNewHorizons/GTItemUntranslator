@@ -12,6 +12,10 @@ import net.minecraft.world.World;
 
 import com.teroblaze.gtitemuntranslator.GTItemUntranslator;
 import com.teroblaze.gtitemuntranslator.TooltipEventHandler;
+import com.teroblaze.gtitemuntranslator.OriginalLanguageStore;
+
+import gregtech.api.interfaces.metatileentity.IMetaTileEntity;
+import gregtech.api.metatileentity.BaseMetaTileEntity;
 
 import mcp.mobius.waila.api.IWailaConfigHandler;
 import mcp.mobius.waila.api.IWailaDataAccessor;
