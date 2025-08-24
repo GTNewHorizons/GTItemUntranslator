@@ -25,13 +25,13 @@ public class CommandWTIP extends CommandBase {
         if ("on".equalsIgnoreCase(args[0])) {
             GTItemUntranslator.wailaEnabled = true;
             GTItemUntranslator.config.get("general", "wailaEnabled", true)
-                    .set(GTItemUntranslator.wailaEnabled);
+                .set(GTItemUntranslator.wailaEnabled);
             GTItemUntranslator.config.save();
             sender.addChatMessage(new ChatComponentText("GT Waila English tooltips activated."));
         } else if ("off".equalsIgnoreCase(args[0])) {
             GTItemUntranslator.wailaEnabled = false;
             GTItemUntranslator.config.get("general", "wailaEnabled", true)
-                    .set(GTItemUntranslator.wailaEnabled);
+                .set(GTItemUntranslator.wailaEnabled);
             GTItemUntranslator.config.save();
             sender.addChatMessage(new ChatComponentText("GT Waila English tooltips deactivated."));
         } else {

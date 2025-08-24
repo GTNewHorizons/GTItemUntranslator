@@ -46,10 +46,10 @@ public class GTItemUntranslator {
         config = new Configuration(configFile);
         config.load();
 
-        tooltipsEnabled = config.getBoolean("tooltipsEnabled", Configuration.CATEGORY_GENERAL, true,
-                "Show English tooltips in inventory");
-        wailaEnabled = config.getBoolean("wailaEnabled", Configuration.CATEGORY_GENERAL, true,
-                "Show English tooltips in Waila");
+        tooltipsEnabled = config
+            .getBoolean("tooltipsEnabled", Configuration.CATEGORY_GENERAL, true, "Show English tooltips in inventory");
+        wailaEnabled = config
+            .getBoolean("wailaEnabled", Configuration.CATEGORY_GENERAL, true, "Show English tooltips in Waila");
 
         OriginalLanguageStore.init();
         System.out.println("[" + NAME + "] PRE-INIT completed.");
@@ -62,7 +62,8 @@ public class GTItemUntranslator {
         System.out.println("[" + NAME + "] Event handlers registered.");
 
         try {
-            FMLInterModComms.sendMessage("Waila", "register", "com.teroblaze.gtitemuntranslator.waila.WailaRegister.register");
+            FMLInterModComms
+                .sendMessage("Waila", "register", "com.teroblaze.gtitemuntranslator.waila.WailaRegister.register");
             System.out.println("[" + NAME + "] Waila integration registered.");
         } catch (Throwable t) {
             System.err.println("[" + NAME + "] Waila not found or integration failed.");
@@ -95,8 +96,10 @@ public class GTItemUntranslator {
     public void onServerStopped(FMLServerStoppedEvent event) {
         System.out.println("[" + NAME + "] Server stopped. Saving config and unloading language store.");
 
-        config.get(Configuration.CATEGORY_GENERAL, "tooltipsEnabled", tooltipsEnabled).set(tooltipsEnabled);
-        config.get(Configuration.CATEGORY_GENERAL, "wailaEnabled", wailaEnabled).set(wailaEnabled);
+        config.get(Configuration.CATEGORY_GENERAL, "tooltipsEnabled", tooltipsEnabled)
+            .set(tooltipsEnabled);
+        config.get(Configuration.CATEGORY_GENERAL, "wailaEnabled", wailaEnabled)
+            .set(wailaEnabled);
         config.save();
 
         OriginalLanguageStore.unload();
