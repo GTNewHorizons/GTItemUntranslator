@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import net.minecraft.item.ItemStack;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.nbt.NBTTagCompound;
