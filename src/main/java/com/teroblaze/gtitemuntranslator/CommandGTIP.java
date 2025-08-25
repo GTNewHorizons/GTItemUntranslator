@@ -21,11 +21,21 @@ public class CommandGTIP extends CommandBase {
         if (args.length == 1) {
             if ("on".equalsIgnoreCase(args[0])) {
                 TooltipEventHandler.TOOLTIPS_ENABLED = true;
+                // сохраняем в конфиг
+                GTItemUntranslator.config.get("general", "tooltipsEnabled", true)
+                    .set(TooltipEventHandler.TOOLTIPS_ENABLED);
+                GTItemUntranslator.config.save();
+
                 sender.addChatMessage(new ChatComponentText("GT English tooltips activated."));
                 return;
             }
             if ("off".equalsIgnoreCase(args[0])) {
                 TooltipEventHandler.TOOLTIPS_ENABLED = false;
+                // сохраняем в конфиг
+                GTItemUntranslator.config.get("general", "tooltipsEnabled", true)
+                    .set(TooltipEventHandler.TOOLTIPS_ENABLED);
+                GTItemUntranslator.config.save();
+
                 sender.addChatMessage(new ChatComponentText("GT English tooltips deactivated."));
                 return;
             }
