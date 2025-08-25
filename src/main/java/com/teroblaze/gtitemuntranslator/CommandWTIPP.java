@@ -4,16 +4,16 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.ChatComponentText;
 
-public class CommandGTIP extends CommandBase {
+public class CommandWTIPP extends CommandBase {
 
     @Override
     public String getCommandName() {
-        return "gtip";
+        return "wtipp";
     }
 
     @Override
     public String getCommandUsage(ICommandSender sender) {
-        return "/gtip <on|off>";
+        return "/wtipp <on|off>";
     }
 
     @Override
@@ -23,17 +23,17 @@ public class CommandGTIP extends CommandBase {
             return;
         }
         if ("on".equalsIgnoreCase(args[0])) {
-            GTItemUntranslator.tooltipsEnabled = true;
-            GTItemUntranslator.config.get("general", "tooltipsEnabled", true)
-                .set(GTItemUntranslator.tooltipsEnabled);
+            GTItemUntranslator.wailaEnabled = true;
+            GTItemUntranslator.config.get("general", "wailaEnabled", true)
+                .set(GTItemUntranslator.wailaEnabled);
             GTItemUntranslator.config.save();
-            sender.addChatMessage(new ChatComponentText("GT English tooltips activated."));
+            sender.addChatMessage(new ChatComponentText("GT Waila English tooltips activated."));
         } else if ("off".equalsIgnoreCase(args[0])) {
-            GTItemUntranslator.tooltipsEnabled = false;
-            GTItemUntranslator.config.get("general", "tooltipsEnabled", true)
-                .set(GTItemUntranslator.tooltipsEnabled);
+            GTItemUntranslator.wailaEnabled = false;
+            GTItemUntranslator.config.get("general", "wailaEnabled", true)
+                .set(GTItemUntranslator.wailaEnabled);
             GTItemUntranslator.config.save();
-            sender.addChatMessage(new ChatComponentText("GT English tooltips deactivated."));
+            sender.addChatMessage(new ChatComponentText("GT Waila English tooltips deactivated."));
         } else {
             sender.addChatMessage(new ChatComponentText("Usage: " + getCommandUsage(sender)));
         }

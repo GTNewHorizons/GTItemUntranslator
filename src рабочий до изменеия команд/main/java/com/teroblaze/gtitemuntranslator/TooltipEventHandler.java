@@ -30,9 +30,6 @@ public class TooltipEventHandler {
         if (DEBUG) System.err.println(msg);
     }
 
-    // Flag for /gtip on|off
-    public static boolean TOOLTIPS_ENABLED = true;
-
     // === Конфигурация префиксов ===
     private static class PrefixRule {
 
@@ -266,7 +263,8 @@ public class TooltipEventHandler {
     // === Main Tooltip Handler ===
     @SubscribeEvent
     public void onItemTooltip(ItemTooltipEvent event) {
-        if (!TOOLTIPS_ENABLED) return;
+        // Используем глобальный флаг из GTItemUntranslator
+        if (!GTItemUntranslator.tooltipsEnabled) return;
 
         ItemStack itemStack = event.itemStack;
         if (itemStack == null || itemStack.getItem() == null) return;

@@ -81,9 +81,9 @@ public class GTItemUntranslator {
         MinecraftServer server = MinecraftServer.getServer();
         ICommandManager commandManager = server.getCommandManager();
         if (commandManager instanceof ServerCommandManager) {
-            ((ServerCommandManager) commandManager).registerCommand(new CommandGTIP());
-            ((ServerCommandManager) commandManager).registerCommand(new CommandWTIP());
-            System.out.println("[" + NAME + "] /gtip and /wtip commands registered.");
+            ((ServerCommandManager) commandManager).registerCommand(new CommandTIPP());
+            ((ServerCommandManager) commandManager).registerCommand(new CommandWTIPP());
+            System.out.println("[" + NAME + "] /tipp and /wtipp commands registered.");
         }
 
         if (!OriginalLanguageStore.isInitialized()) {
