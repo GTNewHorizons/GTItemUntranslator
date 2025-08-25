@@ -1,6 +1,6 @@
 This mod displays the original English names of items and blocks from GregTech and its addons directly in their tooltips. 
-This solves the communication barrier for players using translated game clients, allowing them to easily identify items when talking to other players or looking up information online. 
-You can toggle the tooltip addition on/off with a command /tipp on/off and for Waila /wtipp on/off
+This solves the communication barrier for players using translated game clients, allowing them to easily identify items when talking to other players or looking up information online.  
+You can toggle the tooltip addition on/off with a command /tipp on/off and for Waila /wtipp on/off  
 If you have https://github.com/mrTeroblaze/ItemUntranslator4GTNH installed, you can toggle both mods by /tip on/off and /watip on/off
 
 Examples:  
