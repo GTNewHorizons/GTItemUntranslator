@@ -27,13 +27,13 @@ public class CommandTIPP extends CommandBase {
             GTItemUntranslator.config.get("general", "tooltipsEnabled", true)
                 .set(GTItemUntranslator.tooltipsEnabled);
             GTItemUntranslator.config.save();
-            sender.addChatMessage(new ChatComponentText("GT English tooltips activated."));
+            sender.addChatMessage(new ChatComponentText("GT Original tooltip names: ON"));
         } else if ("off".equalsIgnoreCase(args[0])) {
             GTItemUntranslator.tooltipsEnabled = false;
             GTItemUntranslator.config.get("general", "tooltipsEnabled", true)
                 .set(GTItemUntranslator.tooltipsEnabled);
             GTItemUntranslator.config.save();
-            sender.addChatMessage(new ChatComponentText("GT English tooltips deactivated."));
+            sender.addChatMessage(new ChatComponentText("GT Original tooltip names: OFF"));
         } else {
             sender.addChatMessage(new ChatComponentText("Usage: " + getCommandUsage(sender)));
         }
