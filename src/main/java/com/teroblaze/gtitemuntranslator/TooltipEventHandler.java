@@ -3,6 +3,7 @@ package com.teroblaze.gtitemuntranslator;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
@@ -30,7 +31,7 @@ public class TooltipEventHandler {
         if (DEBUG) System.err.println(msg);
     }
 
-    // === Конфигурация префиксов ===
+    // === Prefix configuration ===
     private static class PrefixRule {
 
         String prefix;
@@ -65,7 +66,7 @@ public class TooltipEventHandler {
         return null;
     }
 
-    // === Universal Pattern Table for OreDict (BartWorks) ===
+    // === Universal pattern table for OreDict (BartWorks) ===
     private static final Map<String, String> BW_OREDICT_TEMPLATES = new HashMap<>();
     static {
         BW_OREDICT_TEMPLATES.put("dust", "%material Dust");
@@ -115,14 +116,12 @@ public class TooltipEventHandler {
             .trim();
     }
 
-    // === Getting the original English name ===
+    // === Resolving original English name ===
     public static String getOriginalEnglishName(ItemStack itemStack, String localizationKey) {
-        if (itemStack == null) {
-            return null;
-        }
+        if (itemStack == null) return null;
 
         try {
-            // === fluids (ItemFluidDisplay) ===
+            // === Fluids (ItemFluidDisplay) ===
             if (itemStack.getItem() instanceof gregtech.common.items.ItemFluidDisplay) {
                 int meta = itemStack.getItemDamage();
                 net.minecraftforge.fluids.Fluid fluid = FluidRegistry.getFluid(meta);
@@ -137,16 +136,11 @@ public class TooltipEventHandler {
                     String raw1 = OriginalLanguageStore.getOriginal(key1);
                     String raw2 = OriginalLanguageStore.getOriginal(key2);
 
-                    if (raw1 != null && !raw1.equals(key1)) {
-                        return raw1;
-                    }
-                    if (raw2 != null && !raw2.equals(key2)) {
-                        return raw2;
-                    }
+                    if (raw1 != null && !raw1.equals(key1)) return raw1;
+                    if (raw2 != null && !raw2.equals(key2)) return raw2;
 
                     if (regName != null && !regName.isEmpty()) {
-                        String pretty = prettifyMaterialName(regName.replace('.', ' '));
-                        return pretty;
+                        return prettifyMaterialName(regName.replace('.', ' '));
                     }
                 } else {
                     error("[Fluid] No fluid found for meta=" + meta);
@@ -154,7 +148,7 @@ public class TooltipEventHandler {
                 return null;
             }
 
-            // === 1. Lang file===
+            // === 1. From lang files ===
             if (localizationKey != null && !localizationKey.isEmpty()) {
                 String rawTemplate = OriginalLanguageStore.getOriginal(localizationKey);
                 if (rawTemplate != null && !rawTemplate.equals(localizationKey)) {
@@ -184,15 +178,17 @@ public class TooltipEventHandler {
                 }
             }
 
-            // === 2. Универсальный фолбэк для BartWorks через OreDict ===
+            // === 2. BartWorks fallback via OreDict ===
             if (localizationKey.startsWith("bw.")) {
                 int[] ids = OreDictionary.getOreIDs(itemStack);
                 for (int id : ids) {
                     String oreName = OreDictionary.getOreName(id);
                     for (Map.Entry<String, String> entry : BW_OREDICT_TEMPLATES.entrySet()) {
-                        String prefix = entry.getKey();
-                        if (oreName.startsWith(prefix)) {
-                            String material = prettifyMaterialName(oreName.substring(prefix.length()));
+                        if (oreName.startsWith(entry.getKey())) {
+                            String material = prettifyMaterialName(
+                                oreName.substring(
+                                    entry.getKey()
+                                        .length()));
                             return entry.getValue()
                                 .replace("%material", material);
                         }
@@ -200,7 +196,7 @@ public class TooltipEventHandler {
                 }
             }
 
-            // === 2. Werkstoff casings ===
+            // === 3. Werkstoff casings ===
             if (localizationKey != null && (localizationKey.startsWith("bw.werkstoffblockscasing.")
                 || localizationKey.startsWith("bw.werkstoffblockscasingadvanced."))) {
                 int meta = itemStack.getItemDamage();
@@ -214,7 +210,7 @@ public class TooltipEventHandler {
                 }
             }
 
-            // === 3. Werkstoff blocks ===
+            // === 4. Werkstoff blocks ===
             if (localizationKey != null && localizationKey.startsWith("bw.werkstoffblocks.")) {
                 int[] ids = OreDictionary.getOreIDs(itemStack);
                 for (int id : ids) {
@@ -235,7 +231,7 @@ public class TooltipEventHandler {
                 if (w != null) return w.getDefaultName() + " Block";
             }
 
-            // === 4. bwMetaGenerated ===
+            // === 5. bwMetaGenerated ===
             if (localizationKey != null && localizationKey.startsWith("gt.bwMetaGenerated")) {
                 int[] ids = OreDictionary.getOreIDs(itemStack);
                 for (int id : ids) {
@@ -263,8 +259,15 @@ public class TooltipEventHandler {
     // === Main Tooltip Handler ===
     @SubscribeEvent
     public void onItemTooltip(ItemTooltipEvent event) {
-        // Используем глобальный флаг из GTItemUntranslator
+        // Check global flag
         if (!GTItemUntranslator.tooltipsEnabled) return;
+
+        // Skip if client language is already English
+        String langCode = Minecraft.getMinecraft()
+            .getLanguageManager()
+            .getCurrentLanguage()
+            .getLanguageCode();
+        if ("en_us".equalsIgnoreCase(langCode)) return;
 
         ItemStack itemStack = event.itemStack;
         if (itemStack == null || itemStack.getItem() == null) return;
@@ -272,11 +275,6 @@ public class TooltipEventHandler {
         try {
             // === Fluids ===
             if (itemStack.getItem() instanceof gregtech.common.items.ItemFluidDisplay) {
-                int meta = itemStack.getItemDamage();
-                debug(
-                    "[Tooltip] Fluid item detected: class=" + itemStack.getItem()
-                        .getClass()
-                        .getName() + ", meta=" + meta);
                 String originalEnglishName = getOriginalEnglishName(itemStack, null);
                 if (originalEnglishName != null) {
                     event.toolTip.add(EnumChatFormatting.GRAY + "[EN] " + originalEnglishName);
@@ -302,7 +300,7 @@ public class TooltipEventHandler {
         }
     }
 
-    // === Публичный статический доступ для Waila ===
+    // === Public static access for Waila ===
     public static String getOriginalEnglishNameStatic(ItemStack stack, String localizationKey) {
         TooltipEventHandler handler = new TooltipEventHandler();
         return handler.getOriginalEnglishName(stack, localizationKey);

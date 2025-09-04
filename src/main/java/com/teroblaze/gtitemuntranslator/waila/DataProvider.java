@@ -3,6 +3,7 @@ package com.teroblaze.gtitemuntranslator.waila;
 import java.util.List;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -27,7 +28,15 @@ public class DataProvider implements IWailaDataProvider {
     @Override
     public List<String> getWailaHead(ItemStack itemStack, List<String> currenttip, IWailaDataAccessor accessor,
         IWailaConfigHandler config) {
+        // Check global flag
         if (!GTItemUntranslator.wailaEnabled) return currenttip;
+
+        // Skip if client language is already English
+        String langCode = Minecraft.getMinecraft()
+            .getLanguageManager()
+            .getCurrentLanguage()
+            .getLanguageCode();
+        if ("en_us".equalsIgnoreCase(langCode)) return currenttip;
 
         try {
             TileEntity te = accessor.getTileEntity();
@@ -37,7 +46,7 @@ public class DataProvider implements IWailaDataProvider {
                 int y = accessor.getPosition().blockY;
                 int z = accessor.getPosition().blockZ;
 
-                // Достаём ItemStack блока так, как будто middle-click (pick block)
+                // Simulate middle-click (pick block) to obtain an ItemStack representation of the block
                 ItemStack pick = block.getPickBlock(
                     new MovingObjectPosition(x, y, z, 1, accessor.getRenderingPosition(), false),
                     accessor.getWorld(),
@@ -55,7 +64,7 @@ public class DataProvider implements IWailaDataProvider {
                 }
             }
         } catch (Throwable t) {
-            System.err.println("[GT Item Untranslator][Waila] Exception while resolving name:");
+            System.err.println("[GT Item Untranslator][Waila] Exception while resolving English name:");
             t.printStackTrace();
         }
 

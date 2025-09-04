@@ -28,11 +28,11 @@ public class GTItemUntranslator {
     public static final String NAME = "GT Item Untranslator";
     public static final String VERSION = "1.0.0";
 
-    /** Глобальные флаги включения/выключения */
+    /** Global flags for enabling/disabling features */
     public static boolean tooltipsEnabled = true;
     public static boolean wailaEnabled = true;
 
-    /** Конфиг Forge */
+    /** Forge configuration handler */
     public static Configuration config;
 
     @Mod.Instance(MODID)
@@ -42,15 +42,18 @@ public class GTItemUntranslator {
     public void preInit(FMLPreInitializationEvent event) {
         System.out.println("[" + NAME + "] PRE-INIT started.");
 
+        // Load Forge config
         File configFile = event.getSuggestedConfigurationFile();
         config = new Configuration(configFile);
         config.load();
 
+        // Read feature toggles from config
         tooltipsEnabled = config
             .getBoolean("tooltipsEnabled", Configuration.CATEGORY_GENERAL, true, "Show English tooltips in inventory");
         wailaEnabled = config
             .getBoolean("wailaEnabled", Configuration.CATEGORY_GENERAL, true, "Show English tooltips in Waila");
 
+        // Initialize language store
         OriginalLanguageStore.init();
         System.out.println("[" + NAME + "] PRE-INIT completed.");
     }
@@ -58,9 +61,12 @@ public class GTItemUntranslator {
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
         System.out.println("[" + NAME + "] INIT started. Registering event handlers.");
+
+        // Register tooltip handler for inventory tooltips
         MinecraftForge.EVENT_BUS.register(new TooltipEventHandler());
         System.out.println("[" + NAME + "] Event handlers registered.");
 
+        // Register Waila integration if Waila is installed
         try {
             FMLInterModComms
                 .sendMessage("Waila", "register", "com.teroblaze.gtitemuntranslator.waila.WailaRegister.register");
@@ -78,6 +84,8 @@ public class GTItemUntranslator {
     @Mod.EventHandler
     public void onServerStarted(FMLServerStartedEvent event) {
         System.out.println("[" + NAME + "] Server started. Registering commands.");
+
+        // Register commands for toggling features
         MinecraftServer server = MinecraftServer.getServer();
         ICommandManager commandManager = server.getCommandManager();
         if (commandManager instanceof ServerCommandManager) {
@@ -86,6 +94,7 @@ public class GTItemUntranslator {
             System.out.println("[" + NAME + "] /tipp and /wtipp commands registered.");
         }
 
+        // Ensure language store is initialized
         if (!OriginalLanguageStore.isInitialized()) {
             System.err.println("[" + NAME + "] ERROR: Language store failed to initialize!");
             OriginalLanguageStore.init();
@@ -96,12 +105,14 @@ public class GTItemUntranslator {
     public void onServerStopped(FMLServerStoppedEvent event) {
         System.out.println("[" + NAME + "] Server stopped. Saving config and unloading language store.");
 
+        // Save current feature toggles to config
         config.get(Configuration.CATEGORY_GENERAL, "tooltipsEnabled", tooltipsEnabled)
             .set(tooltipsEnabled);
         config.get(Configuration.CATEGORY_GENERAL, "wailaEnabled", wailaEnabled)
             .set(wailaEnabled);
         config.save();
 
+        // Cleanup language store
         OriginalLanguageStore.unload();
         System.out.println("[" + NAME + "] Cleanup finished.");
     }
