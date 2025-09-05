@@ -1,6 +1,8 @@
 package com.teroblaze.gtitemuntranslator;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -9,10 +11,7 @@ import java.util.Map;
 
 public class OriginalLanguageStore {
 
-    // --- КОНФИГУРАЦИЯ ОТЛАДКИ ---
-    private static final String DEBUG_KEY = null; // Установите сюда ключ для точечной отладки
-    // --- КОНЕЦ КОНФИГУРАЦИИ ---
-
+    private static final String DEBUG_KEY = null; // Specify the key for debugging
     private static final Map<String, String> ORIGINAL_ENGLISH = new HashMap<>();
     private static boolean isLoaded = false;
 
@@ -23,10 +22,11 @@ public class OriginalLanguageStore {
         }
 
         System.out.println("[GT Item Untranslator] Initializing language store...");
-        // Пути к оригинальным .lang файлам.
-        String[] langPaths = { "/assets/gregtech/lang/en_US.lang", "/assets/gregtech/lang/GregTech.lang",
-            "/assets/bartworks/lang/en_US.lang", "/assets/gtnhlanth/lang/en_US.lang",
-            "/assets/miscutils/lang/en_US.lang", "/assets/tectech/lang/en_US.lang" };
+
+        // === Lang-files from jar (en_US.lang and others) ===
+        String[] langPaths = { "/assets/gregtech/lang/en_US.lang", "/assets/bartworks/lang/en_US.lang",
+            "/assets/gtnhlanth/lang/en_US.lang", "/assets/miscutils/lang/en_US.lang",
+            "/assets/tectech/lang/en_US.lang" };
 
         int totalLoaded = 0;
         for (String langPath : langPaths) {
@@ -38,43 +38,7 @@ public class OriginalLanguageStore {
                     continue;
                 }
 
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
-                    String line;
-                    int lineNumber = 0;
-                    while ((line = reader.readLine()) != null) {
-                        lineNumber++;
-                        line = line.trim();
-                        if (line.isEmpty() || line.startsWith("#")) continue;
-
-                        String processedLine = line;
-                        if (line.startsWith("S:")) {
-                            processedLine = line.substring(2); // убираем префикс "S:"
-                        }
-
-                        int eqPos = processedLine.indexOf('=');
-                        if (eqPos > 0) {
-                            String key = processedLine.substring(0, eqPos)
-                                .trim();
-                            String value = processedLine.substring(eqPos + 1);
-
-                            boolean isDebugKey = DEBUG_KEY != null && DEBUG_KEY.equals(key);
-                            if (isDebugKey) {
-                                System.out.println(
-                                    "[GT Item Untranslator] [LOAD DEBUG] " + langPath
-                                        + " line "
-                                        + lineNumber
-                                        + " -> key='"
-                                        + key
-                                        + "', value='"
-                                        + value
-                                        + "'");
-                            }
-
-                            ORIGINAL_ENGLISH.put(key, value);
-                            loadedFromFile++;
-                        }
-                    }
-                }
+                loadedFromFile = loadFromStream(is, langPath);
                 System.out.println("[GT Item Untranslator] Loaded " + loadedFromFile + " entries from " + langPath);
                 totalLoaded += loadedFromFile;
             } catch (Exception e) {
@@ -83,21 +47,84 @@ public class OriginalLanguageStore {
             }
         }
 
+        // === Loading GregTech.lang from .minecraft folder ===
+        try {
+            File mcDir = new File(".");
+            File gtLangFile = new File(mcDir, "GregTech.lang");
+
+            if (gtLangFile.exists() && gtLangFile.isFile()) {
+                System.out
+                    .println("[GT Item Untranslator] Found external GregTech.lang at: " + gtLangFile.getAbsolutePath());
+                try (InputStream is = new FileInputStream(gtLangFile)) {
+                    int loaded = loadFromStream(is, gtLangFile.getAbsolutePath());
+                    totalLoaded += loaded;
+                    System.out
+                        .println("[GT Item Untranslator] Loaded " + loaded + " entries from external GregTech.lang");
+                }
+            } else {
+                System.out.println(
+                    "[GT Item Untranslator] External GregTech.lang not found in .minecraft folder ("
+                        + gtLangFile.getAbsolutePath()
+                        + ")");
+            }
+        } catch (Exception e) {
+            System.err.println("[GT Item Untranslator] ERROR loading external GregTech.lang from .minecraft");
+            e.printStackTrace();
+        }
+
         isLoaded = true;
         System.out.println(
             "[GT Item Untranslator] Initialization complete. Total unique entries: " + ORIGINAL_ENGLISH.size());
+    }
+
+    private static int loadFromStream(InputStream is, String source) {
+        int loadedFromFile = 0;
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+            String line;
+            int lineNumber = 0;
+            while ((line = reader.readLine()) != null) {
+                lineNumber++;
+                line = line.trim();
+                if (line.isEmpty() || line.startsWith("#")) continue;
+
+                if (line.startsWith("S:")) {
+                    line = line.substring(2);
+                }
+
+                int eqPos = line.indexOf('=');
+                if (eqPos > 0) {
+                    String key = line.substring(0, eqPos)
+                        .trim();
+                    String value = line.substring(eqPos + 1);
+
+                    boolean isDebugKey = DEBUG_KEY != null && DEBUG_KEY.equals(key);
+                    if (isDebugKey) {
+                        System.out.println(
+                            "[GT Item Untranslator] [LOAD DEBUG] " + source
+                                + " line "
+                                + lineNumber
+                                + " -> key='"
+                                + key
+                                + "', value='"
+                                + value
+                                + "'");
+                    }
+
+                    ORIGINAL_ENGLISH.put(key, value);
+                    loadedFromFile++;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[GT Item Untranslator] ERROR parsing lang file: " + source);
+            e.printStackTrace();
+        }
+        return loadedFromFile;
     }
 
     public static boolean isInitialized() {
         return isLoaded;
     }
 
-    /**
-     * Получает оригинальное английское значение по ключу.
-     * 
-     * @param key Ключ локализации (например, "gt.metaitem.01.11305.name").
-     * @return Оригинальное значение из .lang файла или сам ключ, если не найден.
-     */
     public static String getOriginal(String key) {
         if (key == null || key.isEmpty()) return key;
 

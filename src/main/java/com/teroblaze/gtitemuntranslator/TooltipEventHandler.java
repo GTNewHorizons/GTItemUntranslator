@@ -3,6 +3,7 @@ package com.teroblaze.gtitemuntranslator;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
@@ -30,10 +31,7 @@ public class TooltipEventHandler {
         if (DEBUG) System.err.println(msg);
     }
 
-    // Флаг для /gtip on|off
-    public static boolean TOOLTIPS_ENABLED = true;
-
-    // === Конфигурация префиксов ===
+    // === Prefix configuration ===
     private static class PrefixRule {
 
         String prefix;
@@ -68,7 +66,7 @@ public class TooltipEventHandler {
         return null;
     }
 
-    // === Универсальная таблица шаблонов для OreDict ===
+    // === Universal pattern table for OreDict (BartWorks) ===
     private static final Map<String, String> BW_OREDICT_TEMPLATES = new HashMap<>();
     static {
         BW_OREDICT_TEMPLATES.put("dust", "%material Dust");
@@ -77,7 +75,6 @@ public class TooltipEventHandler {
         BW_OREDICT_TEMPLATES.put("crushed", "Crushed %material Ore");
         BW_OREDICT_TEMPLATES.put("crushedPurified", "Purified Crushed %material Ore");
         BW_OREDICT_TEMPLATES.put("crushedCentrifuged", "Centrifuged Crushed %material Ore");
-
         BW_OREDICT_TEMPLATES.put("ingot", "%material Ingot");
         BW_OREDICT_TEMPLATES.put("nugget", "%material Nugget");
         BW_OREDICT_TEMPLATES.put("plate", "%material Plate");
@@ -86,56 +83,45 @@ public class TooltipEventHandler {
         BW_OREDICT_TEMPLATES.put("block", "%material Block");
         BW_OREDICT_TEMPLATES.put("casing", "%material Casing");
         BW_OREDICT_TEMPLATES.put("ore", "%material Ore");
-
         BW_OREDICT_TEMPLATES.put("rawOre", "Raw %material Ore");
-
         BW_OREDICT_TEMPLATES.put("gem", "%material");
         BW_OREDICT_TEMPLATES.put("gemExquisite", "Exquisite %material");
         BW_OREDICT_TEMPLATES.put("gemFlawless", "Flawless %material");
         BW_OREDICT_TEMPLATES.put("gemFlawed", "Flawed %material");
         BW_OREDICT_TEMPLATES.put("gemChipped", "Chipped %material");
-
         BW_OREDICT_TEMPLATES.put("foil", "%material Foil");
         BW_OREDICT_TEMPLATES.put("stick", "%material Stick");
         BW_OREDICT_TEMPLATES.put("stickLong", "Long %material Stick");
-
         BW_OREDICT_TEMPLATES.put("toolHeadWrench", "%material Wrench Head");
         BW_OREDICT_TEMPLATES.put("toolHeadHammer", "%material Hammer Head");
         BW_OREDICT_TEMPLATES.put("toolHeadSaw", "%material Saw Head");
-
         BW_OREDICT_TEMPLATES.put("turbineBlade", "%material Turbine Blade");
-
         BW_OREDICT_TEMPLATES.put("gearGt", "%material Gear");
         BW_OREDICT_TEMPLATES.put("gearGtSmall", "Small %material Gear");
-
         BW_OREDICT_TEMPLATES.put("bolt", "%material Bolt");
         BW_OREDICT_TEMPLATES.put("screw", "%material Screw");
         BW_OREDICT_TEMPLATES.put("ring", "%material Ring");
         BW_OREDICT_TEMPLATES.put("spring", "%material Spring");
         BW_OREDICT_TEMPLATES.put("springSmall", "Small %material Spring");
-
         BW_OREDICT_TEMPLATES.put("rotor", "%material Rotor");
-
         BW_OREDICT_TEMPLATES.put("cell", "%material Cell");
         BW_OREDICT_TEMPLATES.put("cellMolten", "Molten %material Cell");
         BW_OREDICT_TEMPLATES.put("capsule", "%material Capsule");
         BW_OREDICT_TEMPLATES.put("capsuleMolten", "Molten %material Capsule");
     }
 
-    private String prettifyMaterialName(String name) {
+    private static String prettifyMaterialName(String name) {
         if (name == null || name.isEmpty()) return name;
         return name.replaceAll("([a-z])([A-Z])", "$1 $2")
             .trim();
     }
 
-    // === Получение оригинального английского имени ===
-    private String getOriginalEnglishName(ItemStack itemStack, String localizationKey) {
-        if (itemStack == null) {
-            return null;
-        }
+    // === Resolving original English name ===
+    public static String getOriginalEnglishName(ItemStack itemStack, String localizationKey) {
+        if (itemStack == null) return null;
 
         try {
-            // === fluids (ItemFluidDisplay) ===
+            // === Fluids (ItemFluidDisplay) ===
             if (itemStack.getItem() instanceof gregtech.common.items.ItemFluidDisplay) {
                 int meta = itemStack.getItemDamage();
                 net.minecraftforge.fluids.Fluid fluid = FluidRegistry.getFluid(meta);
@@ -150,16 +136,11 @@ public class TooltipEventHandler {
                     String raw1 = OriginalLanguageStore.getOriginal(key1);
                     String raw2 = OriginalLanguageStore.getOriginal(key2);
 
-                    if (raw1 != null && !raw1.equals(key1)) {
-                        return raw1;
-                    }
-                    if (raw2 != null && !raw2.equals(key2)) {
-                        return raw2;
-                    }
+                    if (raw1 != null && !raw1.equals(key1)) return raw1;
+                    if (raw2 != null && !raw2.equals(key2)) return raw2;
 
                     if (regName != null && !regName.isEmpty()) {
-                        String pretty = prettifyMaterialName(regName.replace('.', ' '));
-                        return pretty;
+                        return prettifyMaterialName(regName.replace('.', ' '));
                     }
                 } else {
                     error("[Fluid] No fluid found for meta=" + meta);
@@ -167,7 +148,7 @@ public class TooltipEventHandler {
                 return null;
             }
 
-            // === 1. Lang ===
+            // === 1. From lang files ===
             if (localizationKey != null && !localizationKey.isEmpty()) {
                 String rawTemplate = OriginalLanguageStore.getOriginal(localizationKey);
                 if (rawTemplate != null && !rawTemplate.equals(localizationKey)) {
@@ -197,7 +178,25 @@ public class TooltipEventHandler {
                 }
             }
 
-            // === 2. Werkstoff casing ===
+            // === 2. BartWorks fallback via OreDict ===
+            if (localizationKey.startsWith("bw.")) {
+                int[] ids = OreDictionary.getOreIDs(itemStack);
+                for (int id : ids) {
+                    String oreName = OreDictionary.getOreName(id);
+                    for (Map.Entry<String, String> entry : BW_OREDICT_TEMPLATES.entrySet()) {
+                        if (oreName.startsWith(entry.getKey())) {
+                            String material = prettifyMaterialName(
+                                oreName.substring(
+                                    entry.getKey()
+                                        .length()));
+                            return entry.getValue()
+                                .replace("%material", material);
+                        }
+                    }
+                }
+            }
+
+            // === 3. Werkstoff casings ===
             if (localizationKey != null && (localizationKey.startsWith("bw.werkstoffblockscasing.")
                 || localizationKey.startsWith("bw.werkstoffblockscasingadvanced."))) {
                 int meta = itemStack.getItemDamage();
@@ -211,7 +210,7 @@ public class TooltipEventHandler {
                 }
             }
 
-            // === 3. Werkstoff blocks ===
+            // === 4. Werkstoff blocks ===
             if (localizationKey != null && localizationKey.startsWith("bw.werkstoffblocks.")) {
                 int[] ids = OreDictionary.getOreIDs(itemStack);
                 for (int id : ids) {
@@ -232,7 +231,7 @@ public class TooltipEventHandler {
                 if (w != null) return w.getDefaultName() + " Block";
             }
 
-            // === 4. bwMetaGenerated ===
+            // === 5. bwMetaGenerated ===
             if (localizationKey != null && localizationKey.startsWith("gt.bwMetaGenerated")) {
                 int[] ids = OreDictionary.getOreIDs(itemStack);
                 for (int id : ids) {
@@ -257,10 +256,18 @@ public class TooltipEventHandler {
         return null;
     }
 
-    // === Основной обработчик тултипов ===
+    // === Main Tooltip Handler ===
     @SubscribeEvent
     public void onItemTooltip(ItemTooltipEvent event) {
-        if (!TOOLTIPS_ENABLED) return;
+        // Check global flag
+        if (!GTItemUntranslator.tooltipsEnabled) return;
+
+        // Skip if client language is already English
+        String langCode = Minecraft.getMinecraft()
+            .getLanguageManager()
+            .getCurrentLanguage()
+            .getLanguageCode();
+        if ("en_us".equalsIgnoreCase(langCode)) return;
 
         ItemStack itemStack = event.itemStack;
         if (itemStack == null || itemStack.getItem() == null) return;
@@ -268,11 +275,6 @@ public class TooltipEventHandler {
         try {
             // === Fluids ===
             if (itemStack.getItem() instanceof gregtech.common.items.ItemFluidDisplay) {
-                int meta = itemStack.getItemDamage();
-                debug(
-                    "[Tooltip] Fluid item detected: class=" + itemStack.getItem()
-                        .getClass()
-                        .getName() + ", meta=" + meta);
                 String originalEnglishName = getOriginalEnglishName(itemStack, null);
                 if (originalEnglishName != null) {
                     event.toolTip.add(EnumChatFormatting.GRAY + "[EN] " + originalEnglishName);
@@ -280,7 +282,7 @@ public class TooltipEventHandler {
                 return;
             }
 
-            // === Обычные предметы ===
+            // === Regular items ===
             String unloc = itemStack.getUnlocalizedName();
             PrefixRule rule = matchPrefix(unloc);
             if (rule != null) {
@@ -296,5 +298,11 @@ public class TooltipEventHandler {
             error("onItemTooltip exception:");
             t.printStackTrace();
         }
+    }
+
+    // === Public static access for Waila ===
+    public static String getOriginalEnglishNameStatic(ItemStack stack, String localizationKey) {
+        TooltipEventHandler handler = new TooltipEventHandler();
+        return handler.getOriginalEnglishName(stack, localizationKey);
     }
 }

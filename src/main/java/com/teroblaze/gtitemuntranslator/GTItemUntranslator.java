@@ -1,12 +1,16 @@
 package com.teroblaze.gtitemuntranslator;
 
+import java.io.File;
+
 import net.minecraft.command.ICommandManager;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.config.Configuration;
 
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLInterModComms;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartedEvent;
@@ -16,7 +20,7 @@ import cpw.mods.fml.common.event.FMLServerStoppedEvent;
     modid = GTItemUntranslator.MODID,
     name = GTItemUntranslator.NAME,
     version = GTItemUntranslator.VERSION,
-    dependencies = "required-after:gregtech",
+    dependencies = "required-after:gregtech;after:Waila",
     acceptedMinecraftVersions = "[1.7.10]")
 public class GTItemUntranslator {
 
@@ -24,12 +28,32 @@ public class GTItemUntranslator {
     public static final String NAME = "GT Item Untranslator";
     public static final String VERSION = "1.0.0";
 
+    /** Global flags for enabling/disabling features */
+    public static boolean tooltipsEnabled = true;
+    public static boolean wailaEnabled = true;
+
+    /** Forge configuration handler */
+    public static Configuration config;
+
     @Mod.Instance(MODID)
     public static GTItemUntranslator INSTANCE;
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         System.out.println("[" + NAME + "] PRE-INIT started.");
+
+        // Load Forge config
+        File configFile = event.getSuggestedConfigurationFile();
+        config = new Configuration(configFile);
+        config.load();
+
+        // Read feature toggles from config
+        tooltipsEnabled = config
+            .getBoolean("tooltipsEnabled", Configuration.CATEGORY_GENERAL, true, "Show English tooltips in inventory");
+        wailaEnabled = config
+            .getBoolean("wailaEnabled", Configuration.CATEGORY_GENERAL, true, "Show English tooltips in Waila");
+
+        // Initialize language store
         OriginalLanguageStore.init();
         System.out.println("[" + NAME + "] PRE-INIT completed.");
     }
@@ -37,8 +61,19 @@ public class GTItemUntranslator {
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
         System.out.println("[" + NAME + "] INIT started. Registering event handlers.");
+
+        // Register tooltip handler for inventory tooltips
         MinecraftForge.EVENT_BUS.register(new TooltipEventHandler());
         System.out.println("[" + NAME + "] Event handlers registered.");
+
+        // Register Waila integration if Waila is installed
+        try {
+            FMLInterModComms
+                .sendMessage("Waila", "register", "com.teroblaze.gtitemuntranslator.waila.WailaRegister.register");
+            System.out.println("[" + NAME + "] Waila integration registered.");
+        } catch (Throwable t) {
+            System.err.println("[" + NAME + "] Waila not found or integration failed.");
+        }
     }
 
     @Mod.EventHandler
@@ -48,14 +83,18 @@ public class GTItemUntranslator {
 
     @Mod.EventHandler
     public void onServerStarted(FMLServerStartedEvent event) {
-        System.out.println("[" + NAME + "] Server started. Registering /gtip command.");
+        System.out.println("[" + NAME + "] Server started. Registering commands.");
+
+        // Register commands for toggling features
         MinecraftServer server = MinecraftServer.getServer();
         ICommandManager commandManager = server.getCommandManager();
         if (commandManager instanceof ServerCommandManager) {
-            ((ServerCommandManager) commandManager).registerCommand(new CommandGTIP());
-            System.out.println("[" + NAME + "] /gtip command registered.");
+            ((ServerCommandManager) commandManager).registerCommand(new CommandTIPP());
+            ((ServerCommandManager) commandManager).registerCommand(new CommandWTIPP());
+            System.out.println("[" + NAME + "] /tipp and /wtipp commands registered.");
         }
 
+        // Ensure language store is initialized
         if (!OriginalLanguageStore.isInitialized()) {
             System.err.println("[" + NAME + "] ERROR: Language store failed to initialize!");
             OriginalLanguageStore.init();
@@ -64,7 +103,16 @@ public class GTItemUntranslator {
 
     @Mod.EventHandler
     public void onServerStopped(FMLServerStoppedEvent event) {
-        System.out.println("[" + NAME + "] Server stopped. Unloading language store.");
+        System.out.println("[" + NAME + "] Server stopped. Saving config and unloading language store.");
+
+        // Save current feature toggles to config
+        config.get(Configuration.CATEGORY_GENERAL, "tooltipsEnabled", tooltipsEnabled)
+            .set(tooltipsEnabled);
+        config.get(Configuration.CATEGORY_GENERAL, "wailaEnabled", wailaEnabled)
+            .set(wailaEnabled);
+        config.save();
+
+        // Cleanup language store
         OriginalLanguageStore.unload();
         System.out.println("[" + NAME + "] Cleanup finished.");
     }
